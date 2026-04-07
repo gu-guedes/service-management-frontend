@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+	--bg: #f5f2ee;
+	--surface: #ffffff;
+	--border: #d9d3ca;
+	--text: #1a1714;
+	--muted: #8a8077;
+	--accent: #2d6a4f;
+	--accent-light: #d8efe5;
+	--accent2: #e76f51;
+	--accent2-light: #fdeae4;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	font-family: 'DM Sans', sans-serif;
+	background: var(--bg);
+	color: var(--text);
+}
