@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCare — Sistema de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F2EE;
+  --surface: #FFF;
+  --surface2: #EDE9E3;
+  --border: #D9D3CA;
+  --text: #1A1714;
+  --muted: #8A8077;
+  --accent: #2D6A4F;
+  --accent-light: #D8EFE5;
+  --accent2: #E76F51;
+  --accent2-light: #FDEAE4;
+  --yellow-light: #FEF0E0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ─────────── VIEWS ─────────── */
+.view{display:none;}
+.view.active{display:flex;}
+
+/* ════════════════════════════════
+   DASHBOARD VIEW
+════════════════════════════════ */
+#view-dashboard{flex-direction:row;min-height:100vh;}
+
+/* sidebar */
+.sidebar{width:240px;min-height:100vh;background:var(--text);display:flex;flex-direction:column;padding:28px 0;position:fixed;top:0;left:0;z-index:100;}
+.logo{padding:0 24px 32px;border-bottom:1px solid rgba(255,255,255,.08);}
+.logo-title{font-family:'Instrument Serif',serif;font-size:22px;color:#fff;}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+.nav{padding:24px 12px;flex:1;display:flex;flex-direction:column;gap:2px;}
+.nav-section{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.25);padding:16px 12px 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:rgba(255,255,255,.55);transition:all .15s;text-decoration:none;border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.nav-item.active{background:var(--accent);color:#fff;}
+.nav-badge{margin-left:auto;background:var(--accent2);color:white;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;}
+.sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.08);margin:0 12px;}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0;}
+.user-name{font-size:13px;color:rgba(255,255,255,.8);font-weight:500;}
+.user-role{font-size:11px;color:rgba(255,255,255,.35);}
+
+/* main */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
+.page-title{font-family:'Instrument Serif',serif;font-size:20px;}
+.topbar-search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 14px;width:260px;}
+.topbar-search input{background:none;border:none;outline:none;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);width:100%;}
+.topbar-search input::placeholder{color:var(--muted);}
+.today-pill{display:flex;align-items:center;gap:7px;padding:5px 12px;background:var(--accent-light);border-radius:8px;font-size:12px;font-weight:500;color:var(--accent);white-space:nowrap;}
+.today-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+/* content */
+.content{padding:28px 32px;display:flex;flex-direction:column;gap:22px;}
+
+/* tabs */
+.main-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);}
+.main-tab{padding:10px 20px;font-size:14px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.main-tab:hover{color:var(--text);}
+.main-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-page{display:none;flex-direction:column;gap:18px;}
+.tab-page.active{display:flex;}
+
+/* stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:flex-start;justify-content:space-between;}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.stat-value{font-family:'Instrument Serif',serif;font-size:30px;line-height:1;}
+.stat-delta{font-size:12px;color:var(--accent);margin-top:4px;}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+
+/* card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.card-header{padding:18px 22px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.card-title{font-size:15px;font-weight:600;}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* filter bar */
+.filter-bar{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;background:var(--bg);flex-wrap:wrap;}
+.filter-btn{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:white;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .12s;}
+.filter-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+.filter-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
+
+/* table */
+.table{width:100%;border-collapse:collapse;}
+.table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:9px 22px;background:var(--bg);font-weight:500;}
+.table td{padding:13px 22px;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.table tr:last-child td{border-bottom:none;}
+.table tbody tr{cursor:pointer;transition:background .1s;}
+.table tbody tr:hover td{background:#faf9f7;}
+.pet-cell{display:flex;align-items:center;gap:11px;}
+.pet-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pet-name{font-weight:500;}
+.pet-detail{font-size:12px;color:var(--muted);margin-top:1px;}
+.tutor-cell{display:flex;align-items:center;gap:9px;}
+.mini-av{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:white;flex-shrink:0;}
+.mini-av-lg{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0;}
+.pets-count{font-size:11px;color:var(--muted);}
+
+/* expand row */
+.expand-row td{padding:0!important;border-bottom:1px solid var(--border)!important;background:var(--bg);}
+.pets-inline{padding:12px 22px 14px 60px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+.pet-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 13px 7px 9px;background:white;border:1px solid var(--border);border-radius:30px;font-size:13px;cursor:pointer;transition:all .12s;}
+.pet-chip:hover{border-color:var(--accent);background:var(--accent-light);}
+.pet-chip-add{border-style:dashed;border-color:var(--accent);color:var(--accent);font-weight:500;}
+.pet-chip-add:hover{background:var(--accent);color:white;}
+
+/* badge */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500;}
+.bg-green{background:var(--accent-light);color:var(--accent);}
+.bg-orange{background:var(--accent2-light);color:var(--accent2);}
+.bg-yellow{background:var(--yellow-light);color:#b45309;}
+.bg-gray{background:#f0eeeb;color:#888;}
+.bg-blue{background:#e8f0fe;color:#3d7fbd;}
+
+/* 2-col grid */
+.grid-2{display:grid;grid-template-columns:1fr 310px;gap:18px;align-items:start;}
+.side-col{display:flex;flex-direction:column;gap:14px;}
+.agenda-item{padding:11px 18px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--border);}
+.agenda-item:last-child{border-bottom:none;}
+.agenda-time{font-size:12px;font-weight:600;color:var(--muted);width:38px;flex-shrink:0;}
+.agenda-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.agenda-info{flex:1;}
+.agenda-pet{font-size:13px;font-weight:500;}
+.agenda-type{font-size:12px;color:var(--muted);margin-top:1px;}
+
+/* ─────────────────────────────
+   SHARED BUTTONS
+───────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-primary:hover{background:#245a41;}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+.btn-ghost:hover{background:var(--surface2);}
+.btn-sm{padding:6px 13px;font-size:12px;}
+.btn-icon{padding:7px 9px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ════════════════════════════════
+   MODALS (dashboard layer)
+════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border-radius:18px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;transform:translateY(12px);transition:transform .2s;box-shadow:0 24px 80px rgba(0,0,0,.22);}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{padding:22px 26px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;}
+.modal-title{font-family:'Instrument Serif',serif;font-size:20px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-top:3px;}
+.modal-close{background:var(--surface2);border:none;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-close:hover{background:var(--border);}
+.modal-body{padding:22px 26px;}
+.modal-footer{padding:14px 26px 22px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
+.sec-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:13px;margin-top:20px;display:flex;align-items:center;gap:8px;}
+.sec-label:first-child{margin-top:0;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.fl{font-size:12px;font-weight:500;color:var(--muted);}
+.fc{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 13px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+.fc:focus{border-color:var(--accent);background:white;}
+.fc::placeholder{color:var(--muted);}
+select.fc{appearance:none;cursor:pointer;}
+textarea.fc{resize:none;}
+.info-note{background:var(--accent-light);border-radius:9px;padding:10px 13px;font-size:13px;color:var(--accent);display:flex;gap:8px;margin-bottom:14px;line-height:1.5;}
+
+/* ficha pet modal */
+.ficha-hdr{background:linear-gradient(135deg,var(--accent-light),#e4f3ec);padding:20px;display:flex;align-items:center;gap:16px;border-radius:13px;margin-bottom:20px;}
+.ficha-av{width:58px;height:58px;border-radius:14px;font-size:28px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.08);flex-shrink:0;}
+.ficha-name{font-family:'Instrument Serif',serif;font-size:22px;}
+.ficha-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.info-box{background:var(--bg);border-radius:10px;padding:10px 13px;}
+.info-key{font-size:10.5px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.7px;}
+.info-val{font-size:13.5px;font-weight:500;}
+.tutor-block{display:flex;align-items:center;gap:12px;padding:13px;background:var(--bg);border-radius:12px;margin-bottom:4px;}
+.tutor-block-av{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:white;flex-shrink:0;}
+.link-btn{background:none;border:none;font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-family:'DM Sans',sans-serif;margin-left:auto;white-space:nowrap;}
+.hist-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.hist-item:last-child{border-bottom:none;}
+.hist-date{font-size:11px;font-weight:600;color:var(--muted);width:64px;flex-shrink:0;padding-top:2px;}
+.hist-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.hist-title{font-size:13.5px;font-weight:500;}
+.hist-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
+
+/* tutor profile modal */
+.tp-hdr{display:flex;align-items:center;gap:16px;padding:18px;background:linear-gradient(135deg,#e8f0fe,#dce9fd);border-radius:13px;margin-bottom:18px;}
+.tp-av{width:54px;height:54px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0;}
+.tp-name{font-family:'Instrument Serif',serif;font-size:20px;}
+.tp-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.pets-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pet-card-mini{border:1px solid var(--border);border-radius:11px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .12s;background:white;}
+.pet-card-mini:hover{border-color:var(--accent);background:var(--accent-light);}
+.pet-card-mini-add{border-style:dashed;border-color:var(--accent);color:var(--accent);justify-content:center;font-size:13px;font-weight:500;background:transparent;}
+.pet-card-mini-add:hover{background:var(--accent-light);}
+
+/* search results in modal */
+.sr{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.sr:last-child{border-bottom:none;}
+.sr:hover{background:var(--bg);}
+.sr-name{font-size:13.5px;font-weight:500;}
+.sr-info{font-size:12px;color:var(--muted);}
+.sr-action{margin-left:auto;font-size:11px;color:var(--accent);font-weight:500;}
+.divider-or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:12px 0;}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ════════════════════════════════
+   REGISTRATION VIEW
+════════════════════════════════ */
+#view-register{flex-direction:column;min-height:100vh;}
+
+.reg-topbar{background:var(--text);height:56px;display:flex;align-items:center;padding:0 32px;gap:14px;flex-shrink:0;}
+.reg-logo{font-family:'Instrument Serif',serif;font-size:18px;color:white;}
+.reg-back{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;transition:color .15s;}
+.reg-back:hover{color:white;}
+
+.reg-scenario-bar{background:#2a2420;padding:9px 32px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.sc-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);margin-right:4px;}
+.sc-btn{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.sc-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+.sc-btn:hover:not(.active){border-color:rgba(255,255,255,.35);color:white;}
+
+.reg-body{flex:1;display:grid;grid-template-columns:280px 1fr;}
+
+/* progress sidebar */
+.prog-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:40px 28px;display:flex;flex-direction:column;}
+.prog-title{font-family:'Instrument Serif',serif;font-size:17px;margin-bottom:6px;}
+.prog-sub{font-size:12px;color:var(--muted);margin-bottom:36px;line-height:1.5;}
+.steps{display:flex;flex-direction:column;}
+.step-item{display:flex;gap:14px;position:relative;padding-bottom:28px;}
+.step-item:last-child{padding-bottom:0;}
+.step-item::before{content:'';position:absolute;left:15px;top:32px;width:2px;height:calc(100% - 32px);background:var(--border);}
+.step-item:last-child::before{display:none;}
+.step-item.s-done::before{background:var(--accent);}
+.step-circle{width:32px;height:32px;border-radius:50%;border:2px solid #C8C2BB;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#C8C2BB;flex-shrink:0;background:white;transition:all .2s;position:relative;z-index:1;}
+.step-item.s-done .step-circle{background:var(--accent);border-color:var(--accent);color:white;}
+.step-item.s-active .step-circle{background:var(--text);border-color:var(--text);color:white;}
+.step-text{padding-top:4px;}
+.step-name{font-size:13.5px;font-weight:500;color:#C8C2BB;}
+.step-item.s-done .step-name{color:var(--accent);}
+.step-item.s-active .step-name{color:var(--text);}
+.step-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;}
+
+/* sidebar pets list */
+.sidebar-pets{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.sb-pets-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;}
+.sb-pet-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:var(--bg);margin-bottom:7px;font-size:13px;}
+.sb-pet-icon{font-size:17px;}
+.sb-pet-name{font-weight:500;flex:1;}
+.sb-pet-rm{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1;}
+.sb-pet-rm:hover{color:var(--accent2);}
+.sb-add-pet{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--accent);font-weight:500;cursor:pointer;padding:7px 10px;border-radius:9px;border:1px dashed var(--accent);background:var(--accent-light);transition:all .13s;}
+.sb-add-pet:hover{background:var(--accent);color:white;}
+
+/* form area */
+.form-area{padding:40px 48px;overflow-y:auto;}
+.reg-step{display:none;}
+.reg-step.active{display:block;}
+.step-tag{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 11px;border-radius:20px;margin-bottom:12px;}
+.step-tag.blue{background:#e8f0fe;color:#3d7fbd;}
+.step-h1{font-family:'Instrument Serif',serif;font-size:28px;line-height:1.15;margin-bottom:8px;}
+.step-h1 em{font-style:italic;color:var(--accent);}
+.step-hint{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:28px;}
+
+/* form fields */
+.fsec-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.fsec{margin-bottom:26px;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fgroup{display:flex;flex-direction:column;gap:6px;}
+.fgroup.full{grid-column:1/-1;}
+.flabel{font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.freq{color:var(--accent2);font-size:14px;}
+.fcontrol{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;width:100%;}
+.fcontrol:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,106,79,.1);background:white;}
+.fcontrol::placeholder{color:#C0BAB2;}
+select.fcontrol{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8077' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+textarea.fcontrol{resize:none;}
+
+/* species picker */
+.species-picker{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:18px;}
+.sp-opt{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;font-size:11px;color:var(--muted);font-weight:500;transition:all .15s;background:white;}
+.sp-opt .ico{font-size:22px;}
+.sp-opt:hover,.sp-opt.sel{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
+.sp-opt.sel{background:var(--accent);color:white;}
+
+/* sex toggle */
+.sex-toggle{display:flex;gap:8px;}
+.sex-opt{flex:1;padding:9px;border:1.5px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;background:white;}
+.sex-opt:hover,.sex-opt.sel{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.sex-opt.sel{background:var(--accent);color:white;}
+
+/* castration toggle */
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border-radius:10px;border:1.5px solid var(--border);cursor:pointer;}
+.tog-row:hover{border-color:var(--accent);}
+.tog-switch{width:40px;height:22px;background:var(--border);border-radius:20px;position:relative;transition:background .2s;flex-shrink:0;}
+.tog-switch::after{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tog-switch.on{background:var(--accent);}
+.tog-switch.on::after{left:21px;}
+
+/* pet card (step 2) */
+.pet-cards-area{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+.pet-card-filled{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:white;}
+.pet-card-filled.primary{border-color:var(--accent);background:var(--accent-light);}
+.pca-icon{width:44px;height:44px;background:white;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.08);flex-shrink:0;}
+.pca-name{font-size:15px;font-weight:600;}
+.pca-detail{font-size:12px;color:var(--muted);margin-top:2px;}
+.pca-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-add-pet{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border:1.5px dashed var(--accent);border-radius:12px;color:var(--accent);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;background:transparent;width:100%;font-family:'DM Sans',sans-serif;}
+.btn-add-pet:hover{background:var(--accent-light);}
+
+/* inline pet form */
+.pet-mini-form{border:1.5px solid var(--accent);border-radius:12px;overflow:hidden;background:white;margin-bottom:10px;}
+.pmf-hdr{background:var(--accent-light);padding:12px 16px;font-size:13px;font-weight:600;color:var(--accent);display:flex;align-items:center;justify-content:space-between;}
+.pmf-body{padding:16px;}
+
+/* form footer */
+.form-footer{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);margin-top:28px;}
+
+/* review */
+.review-block{background:var(--bg);border-radius:12px;padding:18px;margin-bottom:14px;border:1px solid var(--border);}
+.review-hdr{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.review-edit{font-size:12px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;text-transform:none;letter-spacing:0;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.review-key{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.review-val{font-size:14px;font-weight:500;}
+.review-pet-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.review-pet-row:last-child{border-bottom:none;padding-bottom:0;}
+
+/* success */
+.success-screen{text-align:center;padding:48px 0;}
+.success-icon{width:72px;height:72px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;}
+.success-h1{font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.success-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;text-align:left;}
+.sc-card{background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border);}
+.sc-card-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
+.sc-card-val{font-size:14px;font-weight:500;}
+.sc-card-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+
+/* find tutor */
+.search-result-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.search-result-row:last-child{border-bottom:none;}
+.search-result-row:hover{background:var(--bg);}
+.search-result-row:hover .srr-cta{opacity:1;}
+.srr-av{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
+.srr-info{flex:1;min-width:0;}
+.srr-name{font-size:14px;font-weight:500;}
+.srr-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.srr-right{text-align:right;flex-shrink:0;}
+.srr-pets{font-size:12px;margin-bottom:2px;}
+.srr-count{font-size:11px;color:var(--muted);}
+.srr-cta{font-size:12px;font-weight:600;color:var(--accent);opacity:0;transition:opacity .12s;margin-left:8px;white-space:nowrap;}
+.divider-or-alt{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:16px 0;}
+.divider-or-alt::before,.divider-or-alt::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* tutor banner */
+.tutor-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,#e8f0fe,#dce9fd);border-radius:12px;margin-bottom:22px;}
+.tutor-banner-av{width:44px;height:44px;border-radius:50%;background:#3d7fbd;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0;}
+.tutor-banner-name{font-size:15px;font-weight:600;}
+.tutor-banner-info{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* info box */
+.info-box{display:flex;gap:10px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.5;margin-bottom:18px;}
+.info-box.green{background:var(--accent-light);color:var(--accent);}
+.info-box.orange{background:var(--accent2-light);color:var(--accent2);}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     VIEW 1: DASHBOARD
+═══════════════════════════════════════ -->
+<div id="view-dashboard" class="view active">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">🐾 VetCare</div>
+      <div class="logo-sub">Gestão Clínica</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" onclick="switchTab('dashboard',this)">⊞ &nbsp;Dashboard</button>
+      <button class="nav-item" onclick="switchTab('pets',this)">🐾 &nbsp;Fichas de Pets <span class="nav-badge">3</span></button>
+      <button class="nav-item" onclick="switchTab('tutores',this)">👥 &nbsp;Tutores</button>
+      <div class="nav-section">Atendimento</div>
+      <button class="nav-item">📅 &nbsp;Agenda</button>
+      <button class="nav-item">🩺 &nbsp;Procedimentos</button>
+      <button class="nav-item">💊 &nbsp;Prescrições</button>
+      <div class="nav-section">Gestão</div>
+      <button class="nav-item">📦 &nbsp;Estoque</button>
+      <button class="nav-item">📊 &nbsp;Relatórios</button>
+      <button class="nav-item">⚙️ &nbsp;Configurações</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">DM</div>
+        <div><div class="user-name">Dra. Marina</div><div class="user-role">Veterinária</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title">Dashboard</div>
+      <div class="today-pill"><div class="today-dot"></div>Seg, 23 Fev · 6 consultas</div>
+      <div class="topbar-search"><span style="color:var(--muted)">🔍</span><input type="text" placeholder="Buscar pet, tutor, prontuário..."></div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('novoTutorModal')">＋ Tutor</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('novoPetModal')">🐾 Novo Pet</button>
+    </div>
+
+    <div class="content">
+      <div class="main-tabs">
+        <button class="main-tab active" onclick="switchTab('dashboard',this)" id="tab-dashboard">Visão Geral</button>
+        <button class="main-tab" onclick="switchTab('pets',this)" id="tab-pets">Fichas de Pets</button>
+        <button class="main-tab" onclick="switchTab('tutores',this)" id="tab-tutores">Tutores</button>
+      </div>
+
+      <!-- TAB: DASHBOARD -->
+      <div class="tab-page active" id="tp-dashboard">
+        <div class="stats-row">
+          <div class="stat-card"><div><div class="stat-label">Pets Cadastrados</div><div class="stat-value">248</div><div class="stat-delta">↑ 12 este mês</div></div><div class="stat-icon" style="background:#d8efe5">🐶</div></div>
+          <div class="stat-card"><div><div class="stat-label">Tutores Ativos</div><div class="stat-value">189</div><div class="stat-delta">↑ 8 este mês</div></div><div class="stat-icon" style="background:#e8f0fe">👥</div></div>
+          <div class="stat-card"><div><div class="stat-label">Consultas Hoje</div><div class="stat-value">6</div><div class="stat-delta">3 restantes</div></div><div class="stat-icon" style="background:#fef0e0">📅</div></div>
+          <div class="stat-card"><div><div class="stat-label">Vacinas Pendentes</div><div class="stat-value">14</div><div class="stat-delta" style="color:var(--accent2)">⚠ Atenção</div></div><div class="stat-icon" style="background:#fdeae4">💉</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Agenda de Hoje</div><div class="card-sub">Segunda, 23 de Fevereiro de 2026</div></div><button class="btn btn-ghost btn-sm">Ver completa</button></div>
+            <table class="table">
+              <thead><tr><th>Hora</th><th>Pet / Tutor</th><th>Procedimento</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr onclick="openModal('fichaPetModal')"><td style="font-size:12px;font-weight:600;color:var(--muted)">08:30</td><td><div class="pet-cell"><div class="pet-avatar" style="background:#d8efe5">🐶</div><div><div class="pet-name">Thor</div><div class="pet-detail">Carlos Mendes</div></div></div></td><td style="font-size:13px">Consulta de rotina</td><td><span class="badge bg-green">✓ Concluído</span></td></tr>
+                <tr onclick="openModal('fichaPetModal')"><td style="font-size:12px;font-weight:600;color:var(--muted)">10:00</td><td><div class="pet-cell"><div class="pet-avatar" style="background:#fdeae4">🐱</div><div><div class="pet-name">Luna</div><div class="pet-detail">Ana Lima</div></div></div></td><td style="font-size:13px">Vacinação V4</td><td><span class="badge bg-yellow">⏰ Aguardando</span></td></tr>
+                <tr onclick="openModal('fichaPetModal')"><td style="font-size:12px;font-weight:600;color:var(--muted)">14:00</td><td><div class="pet-cell"><div class="pet-avatar" style="background:#fef0e0">🐶</div><div><div class="pet-name">Mel</div><div class="pet-detail">Rodrigo Sousa</div></div></div></td><td style="font-size:13px">Castração</td><td><span class="badge bg-orange">▶ Próximo</span></td></tr>
+                <tr onclick="openModal('fichaPetModal')"><td style="font-size:12px;font-weight:600;color:var(--muted)">16:00</td><td><div class="pet-cell"><div class="pet-avatar" style="background:#e8f0fe">🐰</div><div><div class="pet-name">Bolinha</div><div class="pet-detail">Fernanda Dias</div></div></div></td><td style="font-size:13px">Checkup geral</td><td><span class="badge bg-gray">Agendado</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="side-col">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Ações Rápidas</div></div>
+              <div style="padding:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <button class="btn btn-ghost" style="justify-content:center;width:100%;flex-direction:column;gap:5px;height:64px;font-size:12px" onclick="goToRegister('new')"><span style="font-size:19px">🐾</span>Novo Pet</button>
+                <button class="btn btn-ghost" style="justify-content:center;width:100%;flex-direction:column;gap:5px;height:64px;font-size:12px" onclick="goToRegister('new')"><span style="font-size:19px">👤</span>Novo Tutor</button>
+                <button class="btn btn-ghost" style="justify-content:center;width:100%;flex-direction:column;gap:5px;height:64px;font-size:12px"><span style="font-size:19px">📅</span>Agendar</button>
+                <button class="btn btn-ghost" style="justify-content:center;width:100%;flex-direction:column;gap:5px;height:64px;font-size:12px"><span style="font-size:19px">💉</span>Vacinas</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Vacinas Vencendo</div><div class="card-sub">Próximos 30 dias</div></div></div>
+              <div style="padding:4px 0">
+                <div class="agenda-item"><div class="agenda-dot" style="background:#e76f51"></div><div class="agenda-info"><div class="agenda-pet">Luna · Persa</div><div class="agenda-type">V4 — vence em 3 dias</div></div><span class="badge bg-orange" style="font-size:10px">Urgente</span></div>
+                <div class="agenda-item"><div class="agenda-dot" style="background:#f4a261"></div><div class="agenda-info"><div class="agenda-pet">Simba · Siamês</div><div class="agenda-type">Antirrábica — 12 dias</div></div><span class="badge bg-yellow" style="font-size:10px">Atenção</span></div>
+                <div class="agenda-item"><div class="agenda-dot" style="background:#ccc"></div><div class="agenda-info"><div class="agenda-pet">Bolinha · Coelho</div><div class="agenda-type">V8 — 28 dias</div></div><span class="badge bg-gray" style="font-size:10px">Ok</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PETS -->
+      <div class="tab-page" id="tp-pets">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Fichas de Pets</div><div class="card-sub">248 animais cadastrados</div></div><button class="btn btn-primary btn-sm" onclick="goToRegister('new')">🐾 Novo Pet</button></div>
+          <div class="filter-bar">
+            <span style="font-size:12px;color:var(--muted)">Filtrar:</span>
+            <button class="filter-btn active" onclick="setFilter(this)">Todos</button>
+            <button class="filter-btn" onclick="setFilter(this)">🐶 Cães</button>
+            <button class="filter-btn" onclick="setFilter(this)">🐱 Gatos</button>
+            <button class="filter-btn" onclick="setFilter(this)">🐰 Outros</button>
+            <button class="filter-btn" onclick="setFilter(this)">⚠ Vacina</button>
+            <button class="filter-btn" onclick="setFilter(this)">⏰ Retorno</button>
+          </div>
+          <table class="table">
+            <thead><tr><th>Pet</th><th>Tutor</th><th>Última Visita</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr onclick="openModal('fichaPetModal')"><td><div class="pet-cell"><div class="pet-avatar" style="background:#d8efe5">🐶</div><div><div class="pet-name">Thor</div><div class="pet-detail">Golden Retriever · 4a · M · Castrado</div></div></div></td><td><div class="tutor-cell"><div class="mini-av">CM</div><div><div>Carlos Mendes</div><div class="pets-count">3 pets</div></div></div></td><td style="font-size:13px;color:var(--muted)">15/02/2026</td><td><span class="badge bg-green">✓ Em dia</span></td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('fichaPetModal')">Ver ficha</button></td></tr>
+              <tr onclick="openModal('fichaPetModal')"><td><div class="pet-cell"><div class="pet-avatar" style="background:#fdeae4">🐱</div><div><div class="pet-name">Luna</div><div class="pet-detail">Persa · 2a · F</div></div></div></td><td><div class="tutor-cell"><div class="mini-av" style="background:#7c6fcd">AL</div><div><div>Ana Lima</div><div class="pets-count">1 pet</div></div></div></td><td style="font-size:13px;color:var(--muted)">20/02/2026</td><td><span class="badge bg-orange">! Vacina</span></td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('fichaPetModal')">Ver ficha</button></td></tr>
+              <tr onclick="openModal('fichaPetModal')"><td><div class="pet-cell"><div class="pet-avatar" style="background:#fef0e0">🐶</div><div><div class="pet-name">Mel</div><div class="pet-detail">SRD · 7a · F</div></div></div></td><td><div class="tutor-cell"><div class="mini-av" style="background:#e07a5f">RS</div><div><div>Rodrigo Sousa</div><div class="pets-count">2 pets</div></div></div></td><td style="font-size:13px;color:var(--muted)">10/01/2026</td><td><span class="badge bg-yellow">⏰ Retorno</span></td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('fichaPetModal')">Ver ficha</button></td></tr>
+              <tr onclick="openModal('fichaPetModal')"><td><div class="pet-cell"><div class="pet-avatar" style="background:#e8f0fe">🐰</div><div><div class="pet-name">Bolinha</div><div class="pet-detail">Coelho · 1a · M</div></div></div></td><td><div class="tutor-cell"><div class="mini-av" style="background:#f4a261">FD</div><div><div>Fernanda Dias</div><div class="pets-count">1 pet</div></div></div></td><td style="font-size:13px;color:var(--muted)">05/02/2026</td><td><span class="badge bg-green">✓ Em dia</span></td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('fichaPetModal')">Ver ficha</button></td></tr>
+              <tr onclick="openModal('fichaPetModal')"><td><div class="pet-cell"><div class="pet-avatar" style="background:#f3e8ff">🐱</div><div><div class="pet-name">Simba</div><div class="pet-detail">Siamês · 5a · M</div></div></div></td><td><div class="tutor-cell"><div class="mini-av" style="background:#3d7fbd">PR</div><div><div>Paula Ramos</div><div class="pets-count">1 pet</div></div></div></td><td style="font-size:13px;color:var(--muted)">22/02/2026</td><td><span class="badge bg-orange">! Vacina</span></td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('fichaPetModal')">Ver ficha</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: TUTORES -->
+      <div class="tab-page" id="tp-tutores">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Tutores / Clientes</div><div class="card-sub">189 tutores cadastrados</div></div><button class="btn btn-primary btn-sm" onclick="goToRegister('new')">＋ Novo Tutor</button></div>
+          <table class="table" id="tutoresTable">
+            <thead><tr><th>Tutor</th><th>Contato</th><th>Pets</th><th>Última Visita</th><th></th></tr></thead>
+            <tbody>
+              <tr data-expand="ex-carlos"><td><div class="tutor-cell"><div class="mini-av-lg">CM</div><div><div style="font-weight:500">Carlos Mendes</div><div class="pets-count">CPF 012.345.678-90</div></div></div></td><td style="font-size:13px">(11) 99234-5678</td><td><span class="badge bg-green">3 pets ▾</span></td><td style="font-size:13px;color:var(--muted)">15/02/2026</td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('tutorModal')">Ver perfil</button></td></tr>
+              <tr class="expand-row" id="ex-carlos" style="display:none"><td colspan="5"><div class="pets-inline"><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐶</span><span style="font-weight:500">Thor</span><span style="font-size:11px;color:var(--muted)">Golden · 4a</span></div><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐱</span><span style="font-weight:500">Mimi</span><span style="font-size:11px;color:var(--muted)">Persa · 2a</span></div><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐶</span><span style="font-weight:500">Bob</span><span style="font-size:11px;color:var(--muted)">Poodle · 6a</span></div><div class="pet-chip pet-chip-add" onclick="goToRegister('addpet')">＋ Adicionar pet</div></div></td></tr>
+
+              <tr data-expand="ex-ana"><td><div class="tutor-cell"><div class="mini-av-lg" style="background:#7c6fcd">AL</div><div><div style="font-weight:500">Ana Lima</div><div class="pets-count">CPF 023.456.789-01</div></div></div></td><td style="font-size:13px">(11) 98765-4321</td><td><span class="badge bg-gray">1 pet ▾</span></td><td style="font-size:13px;color:var(--muted)">20/02/2026</td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('tutorModal')">Ver perfil</button></td></tr>
+              <tr class="expand-row" id="ex-ana" style="display:none"><td colspan="5"><div class="pets-inline"><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐱</span><span style="font-weight:500">Luna</span><span style="font-size:11px;color:var(--muted)">Persa · 2a</span></div><div class="pet-chip pet-chip-add" onclick="goToRegister('addpet')">＋ Adicionar pet</div></div></td></tr>
+
+              <tr data-expand="ex-rodrigo"><td><div class="tutor-cell"><div class="mini-av-lg" style="background:#e07a5f">RS</div><div><div style="font-weight:500">Rodrigo Sousa</div><div class="pets-count">CPF 034.567.890-12</div></div></div></td><td style="font-size:13px">(11) 97654-3210</td><td><span class="badge bg-gray">2 pets ▾</span></td><td style="font-size:13px;color:var(--muted)">10/01/2026</td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('tutorModal')">Ver perfil</button></td></tr>
+              <tr class="expand-row" id="ex-rodrigo" style="display:none"><td colspan="5"><div class="pets-inline"><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐶</span><span style="font-weight:500">Mel</span><span style="font-size:11px;color:var(--muted)">SRD · 7a</span></div><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐢</span><span style="font-weight:500">Tank</span><span style="font-size:11px;color:var(--muted)">Jabuti · 10a</span></div><div class="pet-chip pet-chip-add" onclick="goToRegister('addpet')">＋ Adicionar pet</div></div></td></tr>
+
+              <tr data-expand="ex-fernanda"><td><div class="tutor-cell"><div class="mini-av-lg" style="background:#f4a261">FD</div><div><div style="font-weight:500">Fernanda Dias</div><div class="pets-count">CPF 045.678.901-23</div></div></div></td><td style="font-size:13px">(11) 96543-2109</td><td><span class="badge bg-gray">1 pet ▾</span></td><td style="font-size:13px;color:var(--muted)">05/02/2026</td><td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('tutorModal')">Ver perfil</button></td></tr>
+              <tr class="expand-row" id="ex-fernanda" style="display:none"><td colspan="5"><div class="pets-inline"><div class="pet-chip" onclick="openModal('fichaPetModal')"><span>🐰</span><span style="font-weight:500">Bolinha</span><span style="font-size:11px;color:var(--muted)">Coelho · 1a</span></div><div class="pet-chip pet-chip-add" onclick="goToRegister('addpet')">＋ Adicionar pet</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /view-dashboard -->
+
+<!-- ═══════════════════════════════════════
+     DASHBOARD MODALS
+═══════════════════════════════════════ -->
+
+<!-- FICHA PET -->
+<div class="modal-overlay" id="fichaPetModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header"><div><div class="modal-title">Ficha do Pet</div><div class="modal-sub">Prontuário e histórico de atendimentos</div></div><button class="modal-close" onclick="closeModal('fichaPetModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="ficha-hdr">
+        <div class="ficha-av">🐶</div>
+        <div style="flex:1"><div class="ficha-name">Thor</div><div class="ficha-tags"><span class="badge bg-green">✓ Vacinado</span><span class="badge bg-blue">Castrado</span><span class="badge bg-yellow">⏰ Retorno 30 dias</span></div></div>
+        <button class="btn btn-primary btn-sm">＋ Atendimento</button>
+      </div>
+      <div class="info-grid">
+        <div class="info-box"><div class="info-key">Espécie / Raça</div><div class="info-val">Cão · Golden Retriever</div></div>
+        <div class="info-box"><div class="info-key">Idade</div><div class="info-val">4 anos (Mar/2022)</div></div>
+        <div class="info-box"><div class="info-key">Peso</div><div class="info-val">28,5 kg</div></div>
+        <div class="info-box"><div class="info-key">Sexo</div><div class="info-val">Macho</div></div>
+        <div class="info-box"><div class="info-key">Pelagem</div><div class="info-val">Dourada longa</div></div>
+        <div class="info-box"><div class="info-key">Microchip</div><div class="info-val">985141002983740</div></div>
+      </div>
+      <div class="sec-label">Tutor</div>
+      <div class="tutor-block"><div class="tutor-block-av">CM</div><div><div style="font-size:14px;font-weight:500">Carlos Mendes</div><div style="font-size:12px;color:var(--muted)">📱 (11) 99234-5678 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0e6d6f7c62617d4e6b636f6762206d6163">[email&#160;protected]</a></div></div><button class="link-btn" onclick="closeModal('fichaPetModal');openModal('tutorModal')">Ver todos os pets →</button></div>
+      <div class="sec-label">Histórico de Atendimentos</div>
+      <div class="hist-item"><div class="hist-date">15/02/26</div><div class="hist-icon" style="background:var(--accent-light)">🩺</div><div><div class="hist-title">Consulta de Rotina</div><div class="hist-desc">Boa disposição. Peso estável. Suplemento articular recomendado.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+      <div class="hist-item"><div class="hist-date">10/01/26</div><div class="hist-icon" style="background:#e8f0fe">💉</div><div><div class="hist-title">Vacinação V10 + Antirrábica</div><div class="hist-desc">Aplicadas sem intercorrências. Próxima: Jan/2027.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+      <div class="hist-item"><div class="hist-date">05/09/25</div><div class="hist-icon" style="background:var(--accent2-light)">🔬</div><div><div class="hist-title">Hemograma Completo</div><div class="hist-desc">Resultados normais. Leve anemia corrigida com suplementação.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('fichaPetModal')">Fechar</button><button class="btn btn-primary">Editar Ficha</button></div>
+  </div>
+</div>
+
+<!-- PERFIL TUTOR -->
+<div class="modal-overlay" id="tutorModal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header"><div><div class="modal-title">Perfil do Tutor</div><div class="modal-sub">Dados, pets e histórico unificado</div></div><button class="modal-close" onclick="closeModal('tutorModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="tp-hdr"><div class="tp-av">CM</div><div><div class="tp-name">Carlos Mendes</div><div class="tp-sub">Cliente desde Jan/2022 · 3 pets</div></div><button class="btn btn-ghost btn-sm" style="margin-left:auto">Editar</button></div>
+      <div class="info-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">
+        <div class="info-box"><div class="info-key">CPF</div><div class="info-val">012.345.678-90</div></div>
+        <div class="info-box"><div class="info-key">Telefone</div><div class="info-val">(11) 99234-5678</div></div>
+        <div class="info-box"><div class="info-key">E-mail</div><div class="info-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ceadafbca2a1bd8eaba3afa7a2e0ada1a3">[email&#160;protected]</a></div></div>
+        <div class="info-box"><div class="info-key">Endereço</div><div class="info-val">Rua das Flores, 123</div></div>
+      </div>
+      <div class="sec-label">Pets de Carlos Mendes</div>
+      <div class="pets-grid" style="margin-bottom:22px">
+        <div class="pet-card-mini" onclick="closeModal('tutorModal');openModal('fichaPetModal')"><div class="pet-avatar" style="background:#d8efe5;width:40px;height:40px">🐶</div><div><div class="pet-name">Thor</div><div class="pet-detail">Golden · 4a · Castrado</div><div style="margin-top:5px"><span class="badge bg-green" style="font-size:10px">✓ Em dia</span></div></div></div>
+        <div class="pet-card-mini" onclick="closeModal('tutorModal');openModal('fichaPetModal')"><div class="pet-avatar" style="background:#fdeae4;width:40px;height:40px">🐱</div><div><div class="pet-name">Mimi</div><div class="pet-detail">Persa · 2a</div><div style="margin-top:5px"><span class="badge bg-orange" style="font-size:10px">! Vacina</span></div></div></div>
+        <div class="pet-card-mini" onclick="closeModal('tutorModal');openModal('fichaPetModal')"><div class="pet-avatar" style="background:#fef0e0;width:40px;height:40px">🐶</div><div><div class="pet-name">Bob</div><div class="pet-detail">Poodle · 6a</div><div style="margin-top:5px"><span class="badge bg-yellow" style="font-size:10px">⏰ Retorno</span></div></div></div>
+        <div class="pet-card-mini pet-card-mini-add" onclick="closeModal('tutorModal');goToRegister('addpet')"><span style="font-size:20px">＋</span> Novo pet para Carlos</div>
+      </div>
+      <div class="sec-label">Histórico Unificado</div>
+      <div class="hist-item"><div class="hist-date">15/02/26</div><div class="hist-icon" style="background:var(--accent-light)">🩺</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><div class="hist-title">Consulta de Rotina</div><span class="badge bg-green" style="font-size:10px">🐶 Thor</span></div><div class="hist-desc">Peso estável. Suplemento articular recomendado.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+      <div class="hist-item"><div class="hist-date">12/02/26</div><div class="hist-icon" style="background:var(--accent2-light)">💉</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><div class="hist-title">Vacina V4 — Pendente</div><span class="badge bg-orange" style="font-size:10px">🐱 Mimi</span></div><div class="hist-desc">Vacina em atraso. Agendada para 23/02.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+      <div class="hist-item"><div class="hist-date">10/01/26</div><div class="hist-icon" style="background:#e8f0fe">💉</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><div class="hist-title">V10 + Antirrábica</div><span class="badge bg-green" style="font-size:10px">🐶 Thor</span></div><div class="hist-desc">Aplicadas sem intercorrências.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+      <div class="hist-item"><div class="hist-date">03/01/26</div><div class="hist-icon" style="background:var(--yellow-light)">🔬</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><div class="hist-title">Exame de Urina</div><span class="badge bg-yellow" style="font-size:10px">🐶 Bob</span></div><div class="hist-desc">Sem alterações. Suplemento renal preventivo.</div></div><button class="btn btn-ghost btn-sm">Ver</button></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('tutorModal')">Fechar</button><button class="btn btn-primary" onclick="closeModal('tutorModal');goToRegister('addpet')">＋ Novo Pet</button></div>
+  </div>
+</div>
+
+<!-- NOVO PET (modal rápido - abre registro completo) -->
+<div class="modal-overlay" id="novoPetModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header"><div><div class="modal-title">Adicionar Pet</div><div class="modal-sub">Escolha o caminho de cadastro</div></div><button class="modal-close" onclick="closeModal('novoPetModal')">✕</button></div>
+    <div class="modal-body" style="padding-bottom:8px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''" onclick="closeModal('novoPetModal');goToRegister('new')">
+          <span style="font-size:28px">🧑‍⚕️</span>
+          <div><div style="font-size:14px;font-weight:600">Cliente novo</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Cadastrar tutor + primeiro pet juntos</div></div>
+          <span style="margin-left:auto;color:var(--accent);font-size:18px">→</span>
+        </div>
+        <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''" onclick="closeModal('novoPetModal');goToRegister('addpet')">
+          <span style="font-size:28px">🐾</span>
+          <div><div style="font-size:14px;font-weight:600">Cliente já cadastrado</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Buscar tutor e adicionar novo pet</div></div>
+          <span style="margin-left:auto;color:var(--accent);font-size:18px">→</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="border-top:none;padding-top:8px"><button class="btn btn-ghost" onclick="closeModal('novoPetModal')">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- NOVO TUTOR (modal simples para dados de contato rápidos) -->
+<div class="modal-overlay" id="novoTutorModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><div><div class="modal-title">Novo Tutor</div><div class="modal-sub">Cadastro completo em etapas — pelo menos 1 pet obrigatório</div></div><button class="modal-close" onclick="closeModal('novoTutorModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="info-note">💡 O cadastro completo inclui dados do tutor e vinculação de pelo menos um pet. Clique em continuar para abrir o formulário.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('novoTutorModal')">Cancelar</button><button class="btn btn-primary" onclick="closeModal('novoTutorModal');goToRegister('new')">Abrir formulário →</button></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     VIEW 2: REGISTRO
+═══════════════════════════════════════ -->
+<div id="view-register" class="view">
+
+  <div class="reg-topbar">
+    <div class="reg-logo">🐾 VetCare</div>
+    <button class="reg-back" onclick="backToDashboard()">← Voltar ao sistema</button>
+  </div>
+
+  <div class="reg-scenario-bar">
+    <span class="sc-label">Modo:</span>
+    <button class="sc-btn active" id="sc-new" onclick="setScenario('new',this)">Novo tutor + 1º pet</button>
+    <button class="sc-btn" id="sc-addpet" onclick="setScenario('addpet',this)">Adicionar pet a tutor existente</button>
+  </div>
+
+  <div class="reg-body">
+
+    <!-- PROGRESS SIDEBAR -->
+    <div class="prog-sidebar" id="progSidebar">
+      <div class="prog-title" id="progTitle">Cadastro de Tutor</div>
+      <div class="prog-sub" id="progSub">Tutor novo. Pelo menos um pet é obrigatório.</div>
+      <div class="steps" id="stepsWrap">
+        <div class="step-item s-active" id="sd1">
+          <div class="step-circle">1</div>
+          <div class="step-text"><div class="step-name">Dados do tutor</div><div class="step-desc">Nome, contato e endereço</div></div>
+        </div>
+        <div class="step-item" id="sd2">
+          <div class="step-circle">2</div>
+          <div class="step-text"><div class="step-name">Pet(s)</div><div class="step-desc">Pelo menos um obrigatório</div></div>
+        </div>
+        <div class="step-item" id="sd3">
+          <div class="step-circle">3</div>
+          <div class="step-text"><div class="step-name">Revisão</div><div class="step-desc">Confirmar e salvar</div></div>
+        </div>
+      </div>
+      <!-- Pets added live -->
+      <div class="sidebar-pets" id="sbPets" style="display:none">
+        <div class="sb-pets-title">Pets adicionados</div>
+        <div id="sbPetList">
+          <div class="sb-pet-item"><span class="sb-pet-icon">🐶</span><span class="sb-pet-name">Thor</span><button class="sb-pet-rm">✕</button></div>
+        </div>
+        <div class="sb-add-pet" onclick="showPetForm()">＋ Mais um pet</div>
+      </div>
+    </div>
+
+    <!-- FORM AREA -->
+    <div class="form-area">
+
+      <!-- ── STEP 1: TUTOR ── -->
+      <div class="reg-step active" id="rs1">
+        <div><div class="step-tag">Passo 1 de 3</div></div>
+        <h1 class="step-h1">Quem é o <em>tutor</em>?</h1>
+        <p class="step-hint">Dados do cliente responsável. Cadastrado uma vez — você vincula os pets depois.</p>
+
+        <div class="fsec">
+          <div class="fsec-title">👤 Identificação</div>
+          <div class="field-grid">
+            <div class="fgroup full"><label class="flabel">Nome completo <span class="freq">*</span></label><input class="fcontrol" type="text" placeholder="Ex: Carlos Eduardo Mendes" value="Carlos Eduardo Mendes"></div>
+            <div class="fgroup"><label class="flabel">CPF <span class="freq">*</span></label><input class="fcontrol" type="text" placeholder="000.000.000-00" value="012.345.678-90"></div>
+            <div class="fgroup"><label class="flabel">Data de nascimento</label><input class="fcontrol" type="date" value="1985-04-12"></div>
+          </div>
+        </div>
+
+        <div class="fsec">
+          <div class="fsec-title">📱 Contato</div>
+          <div class="field-grid">
+            <div class="fgroup"><label class="flabel">WhatsApp / Telefone <span class="freq">*</span></label><input class="fcontrol" type="text" placeholder="(11) 99000-0000" value="(11) 99234-5678"></div>
+            <div class="fgroup"><label class="flabel">E-mail</label><input class="fcontrol" type="email" placeholder="email@exemplo.com" value="carlos@email.com"></div>
+          </div>
+        </div>
+
+        <div class="fsec">
+          <div class="fsec-title">📍 Endereço</div>
+          <div class="field-grid">
+            <div class="fgroup"><label class="flabel">CEP</label><input class="fcontrol" type="text" placeholder="00000-000"></div>
+            <div class="fgroup"><label class="flabel">Cidade / Estado</label><input class="fcontrol" type="text" placeholder="São Paulo, SP" value="São Paulo, SP"></div>
+            <div class="fgroup full"><label class="flabel">Rua e número</label><input class="fcontrol" type="text" placeholder="Rua, número, bairro" value="Rua das Flores, 123 — Jardim Paulista"></div>
+            <div class="fgroup full"><label class="flabel">Observações</label><textarea class="fcontrol" rows="2" placeholder="Ex: prefere contato via WhatsApp após as 18h..."></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <div style="font-size:13px;color:var(--muted)"><span style="color:var(--accent2)">*</span> Obrigatórios</div>
+          <button class="btn btn-primary" onclick="goStep(2)">Próximo: adicionar pet →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: PETS ── -->
+      <div class="reg-step" id="rs2">
+        <div><div class="step-tag">Passo 2 de 3</div></div>
+        <h1 class="step-h1">Os <em>pets</em> de Carlos</h1>
+        <p class="step-hint">Pelo menos um pet é obrigatório. Você pode adicionar mais agora ou depois no perfil do tutor.</p>
+
+        <div class="info-box green">💡 Todos os pets adicionados aqui ficam vinculados a Carlos Mendes. Novos pets podem ser adicionados a qualquer momento no perfil dele.</div>
+
+        <div class="pet-cards-area" id="petCardsArea">
+          <div class="pet-card-filled primary">
+            <div class="pca-icon">🐶</div>
+            <div style="flex:1"><div class="pca-name">Thor</div><div class="pca-detail">Golden Retriever · Macho · 4 anos · Castrado</div></div>
+            <div class="pca-actions">
+              <button class="btn btn-ghost btn-icon">✏️</button>
+              <button class="btn btn-ghost btn-icon" style="color:var(--accent2)" onclick="this.closest('.pet-card-filled').remove()">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline pet form -->
+        <div id="petFormInline" style="display:none;margin-bottom:10px">
+          <div class="pet-mini-form">
+            <div class="pmf-hdr"><span>🐾 Novo pet para Carlos Mendes</span><button style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:18px;line-height:1" onclick="hidePetForm()">✕</button></div>
+            <div class="pmf-body">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:500">Espécie <span style="color:var(--accent2)">*</span></div>
+              <div class="species-picker">
+                <div class="sp-opt sel" onclick="selSpecies(this)"><span class="ico">🐶</span>Cão</div>
+                <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐱</span>Gato</div>
+                <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐰</span>Coelho</div>
+                <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐦</span>Ave</div>
+                <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐢</span>Réptil</div>
+                <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐹</span>Outro</div>
+              </div>
+              <div class="field-grid">
+                <div class="fgroup"><label class="flabel">Nome <span class="freq">*</span></label><input class="fcontrol" type="text" placeholder="Ex: Mimi"></div>
+                <div class="fgroup"><label class="flabel">Raça</label><input class="fcontrol" type="text" placeholder="Ex: Persa, SRD..."></div>
+                <div class="fgroup"><label class="flabel">Sexo</label><div class="sex-toggle"><div class="sex-opt sel" onclick="selSex(this)">♂ Macho</div><div class="sex-opt" onclick="selSex(this)">♀ Fêmea</div></div></div>
+                <div class="fgroup"><label class="flabel">Data de nascimento</label><input class="fcontrol" type="date"></div>
+                <div class="fgroup"><label class="flabel">Peso (kg)</label><input class="fcontrol" type="number" placeholder="0,0" step="0.1"></div>
+                <div class="fgroup"><label class="flabel">Microchip</label><input class="fcontrol" type="text" placeholder="Nº do chip"></div>
+                <div class="fgroup full" onclick="togCastrado(this)"><div class="tog-row"><div><div style="font-size:14px;font-weight:500">Animal castrado?</div><div style="font-size:12px;color:var(--muted)">Marque se já foi castrado</div></div><div class="tog-switch" id="togCas1"></div></div></div>
+                <div class="fgroup full"><label class="flabel">Alergias / observações</label><textarea class="fcontrol" rows="2" placeholder="Ex: alergia a dipirona..."></textarea></div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+                <button class="btn btn-ghost btn-sm" onclick="hidePetForm()">Cancelar</button>
+                <button class="btn btn-primary btn-sm" onclick="addPetCard()">＋ Adicionar pet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-add-pet" id="btnAddPet" onclick="showPetForm()"><span style="font-size:20px">＋</span> Adicionar outro pet de Carlos</button>
+
+        <div class="form-footer">
+          <button class="btn btn-ghost" onclick="goStep(1)">← Voltar</button>
+          <button class="btn btn-primary" onclick="goStep(3)">Revisar e salvar →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: REVIEW ── -->
+      <div class="reg-step" id="rs3">
+        <div><div class="step-tag">Passo 3 de 3</div></div>
+        <h1 class="step-h1">Tudo <em>certo</em>?</h1>
+        <p class="step-hint">Revise os dados antes de salvar. Tudo pode ser editado depois.</p>
+
+        <div class="review-block">
+          <div class="review-hdr"><span>👤 Tutor</span><button class="review-edit" onclick="goStep(1)">Editar</button></div>
+          <div class="review-grid">
+            <div><div class="review-key">Nome</div><div class="review-val">Carlos Eduardo Mendes</div></div>
+            <div><div class="review-key">CPF</div><div class="review-val">012.345.678-90</div></div>
+            <div><div class="review-key">WhatsApp</div><div class="review-val">(11) 99234-5678</div></div>
+            <div><div class="review-key">E-mail</div><div class="review-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bddedccfd1d2cefdd8d0dcd4d193ded2d0">[email&#160;protected]</a></div></div>
+            <div style="grid-column:1/-1"><div class="review-key">Endereço</div><div class="review-val">Rua das Flores, 123 — Jardim Paulista · São Paulo, SP</div></div>
+          </div>
+        </div>
+
+        <div class="review-block">
+          <div class="review-hdr"><span>🐾 Pets vinculados</span><button class="review-edit" onclick="goStep(2)">Editar</button></div>
+          <div class="review-pet-row"><div style="width:38px;height:38px;background:var(--accent-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🐶</div><div style="flex:1"><div style="font-size:14px;font-weight:500">Thor</div><div style="font-size:12px;color:var(--muted)">Golden Retriever · Macho · 4 anos · Castrado</div></div><span class="badge bg-green" style="font-size:11px">Principal</span></div>
+          <div class="review-pet-row"><div style="width:38px;height:38px;background:#fdeae4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🐱</div><div style="flex:1"><div style="font-size:14px;font-weight:500">Mimi</div><div style="font-size:12px;color:var(--muted)">Persa · Fêmea · 2 anos</div></div></div>
+        </div>
+
+        <div class="info-box orange">📋 Após salvar, um prontuário vazio será criado para cada pet. O histórico começa no primeiro atendimento.</div>
+
+        <div class="form-footer">
+          <button class="btn btn-ghost" onclick="goStep(2)">← Voltar</button>
+          <button class="btn btn-primary" style="padding:12px 28px;font-size:15px" onclick="goSuccess()">✓ Salvar cadastro</button>
+        </div>
+      </div>
+
+      <!-- ── SUCCESS ── -->
+      <div class="reg-step" id="rsSuccess">
+        <div class="success-screen">
+          <div class="success-icon">✅</div>
+          <h1 class="success-h1">Cadastro realizado!</h1>
+          <p class="success-sub">Tutor e pets salvos. Os prontuários já estão disponíveis no sistema.</p>
+          <div class="success-cards">
+            <div class="sc-card"><div class="sc-card-title">👤 Tutor</div><div class="sc-card-val">Carlos Eduardo Mendes</div><div class="sc-card-sub">(11) 99234-5678</div></div>
+            <div class="sc-card"><div class="sc-card-title">🐾 Pets</div><div class="sc-card-val">Thor · Mimi</div><div class="sc-card-sub">2 fichas criadas</div></div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="goToRegister('new')">Novo cadastro</button>
+            <button class="btn btn-ghost" onclick="backToDashboard();openModal('tutorModal')">Ver perfil do tutor</button>
+            <button class="btn btn-primary">Agendar consulta →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FIND TUTOR (cenário 2, passo 1) ── -->
+      <div class="reg-step" id="rsFindTutor">
+        <div><div class="step-tag blue">Novo Pet · Passo 1</div></div>
+        <h1 class="step-h1">Para qual <em>tutor</em>?</h1>
+        <p class="step-hint">Busque o tutor pelo nome ou CPF. Se não estiver cadastrado, crie o tutor primeiro.</p>
+
+        <div class="fgroup" style="margin-bottom:10px">
+          <label class="flabel">Buscar tutor cadastrado</label>
+          <div style="position:relative">
+            <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)">🔍</span>
+            <input class="fcontrol" type="text" style="padding-left:38px" placeholder="Nome, CPF ou telefone..." value="Car" oninput="showSearchResults(this.value)">
+          </div>
+        </div>
+
+        <div style="border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px" id="searchResultsBox">
+          <div class="search-result-row" onclick="selectTutorForPet(this,'Carlos Eduardo Mendes','CM','3 pets · (11) 99234-5678')">
+            <div class="srr-av">CM</div>
+            <div class="srr-info"><div class="srr-name">Carlos Eduardo Mendes</div><div class="srr-sub">CPF 012.345.678-90 · (11) 99234-5678</div></div>
+            <div class="srr-right"><div class="srr-pets">🐶 Thor &nbsp;🐱 Mimi &nbsp;🐶 Bob</div><div class="srr-count">3 pets cadastrados</div></div>
+            <span class="srr-cta">Selecionar →</span>
+          </div>
+          <div class="search-result-row" onclick="selectTutorForPet(this,'Carolina Figueiredo','CF','1 pet · (11) 91234-5678')">
+            <div class="srr-av" style="background:#7c6fcd">CF</div>
+            <div class="srr-info"><div class="srr-name">Carolina Figueiredo</div><div class="srr-sub">CPF 034.567.890-11 · (11) 91234-5678</div></div>
+            <div class="srr-right"><div class="srr-pets">🐱 Luna</div><div class="srr-count">1 pet cadastrado</div></div>
+            <span class="srr-cta">Selecionar →</span>
+          </div>
+        </div>
+
+        <div class="divider-or-alt">tutor não encontrado?</div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px" onclick="setScenario('new',document.getElementById('sc-new'))">＋ Cadastrar novo tutor</button>
+
+        <div class="form-footer">
+          <div></div>
+          <button class="btn btn-primary" id="btnNextToAddPet" disabled onclick="goToAddPetStep()">Próximo: dados do pet →</button>
+        </div>
+      </div>
+
+      <!-- ── ADD PET TO EXISTING TUTOR (cenário 2, passo 2) ── -->
+      <div class="reg-step" id="rsAddPet">
+        <div><div class="step-tag blue">Novo Pet · Passo 2</div></div>
+        <h1 class="step-h1">Dados do <em>novo pet</em></h1>
+        <p class="step-hint">Preencha as informações do animal. O tutor já está vinculado.</p>
+
+        <div class="tutor-banner">
+          <div class="tutor-banner-av" id="tbAv">CM</div>
+          <div><div class="tutor-banner-name" id="tbName">Carlos Eduardo Mendes</div><div class="tutor-banner-info" id="tbInfo">3 pets já cadastrados · (11) 99234-5678</div></div>
+          <button class="link-btn" onclick="goToFindTutor()">← Trocar tutor</button>
+        </div>
+
+        <div style="margin-bottom:20px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Pets já cadastrados</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="existingPetsChips">
+            <div style="display:flex;align-items:center;gap:7px;padding:6px 12px;background:white;border:1px solid var(--border);border-radius:20px;font-size:13px"><span>🐶</span><span style="font-weight:500">Thor</span></div>
+            <div style="display:flex;align-items:center;gap:7px;padding:6px 12px;background:white;border:1px solid var(--border);border-radius:20px;font-size:13px"><span>🐱</span><span style="font-weight:500">Mimi</span></div>
+            <div style="display:flex;align-items:center;gap:7px;padding:6px 12px;background:white;border:1px solid var(--border);border-radius:20px;font-size:13px"><span>🐶</span><span style="font-weight:500">Bob</span></div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-weight:600">🐾 Dados do Novo Pet</div>
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:500">Espécie <span style="color:var(--accent2)">*</span></div>
+          <div class="species-picker">
+            <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐶</span>Cão</div>
+            <div class="sp-opt sel" onclick="selSpecies(this)"><span class="ico">🐱</span>Gato</div>
+            <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐰</span>Coelho</div>
+            <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐦</span>Ave</div>
+            <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐢</span>Réptil</div>
+            <div class="sp-opt" onclick="selSpecies(this)"><span class="ico">🐹</span>Outro</div>
+          </div>
+        </div>
+        <div class="field-grid" style="margin-bottom:18px">
+          <div class="fgroup"><label class="flabel">Nome <span class="freq">*</span></label><input class="fcontrol" type="text" placeholder="Ex: Nina" value="Nina"></div>
+          <div class="fgroup"><label class="flabel">Raça</label><input class="fcontrol" type="text" placeholder="Ex: Siamês, SRD..." value="Siamês"></div>
+          <div class="fgroup"><label class="flabel">Sexo</label><div class="sex-toggle"><div class="sex-opt" onclick="selSex(this)">♂ Macho</div><div class="sex-opt sel" onclick="selSex(this)">♀ Fêmea</div></div></div>
+          <div class="fgroup"><label class="flabel">Data de nascimento</label><input class="fcontrol" type="date" value="2023-08-15"></div>
+          <div class="fgroup"><label class="flabel">Peso (kg)</label><input class="fcontrol" type="number" placeholder="0,0" step="0.1" value="3.2"></div>
+          <div class="fgroup"><label class="flabel">Microchip</label><input class="fcontrol" type="text" placeholder="Nº do chip"></div>
+          <div class="fgroup full" onclick="togCastrado(this)"><div class="tog-row"><div><div style="font-size:14px;font-weight:500">Animal castrado?</div><div style="font-size:12px;color:var(--muted)">Marque se já foi castrado</div></div><div class="tog-switch" id="togCas2"></div></div></div>
+          <div class="fgroup full"><label class="flabel">Alergias / observações</label><textarea class="fcontrol" rows="2" placeholder="Ex: alergia a dipirona..."></textarea></div>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn btn-ghost" onclick="goToFindTutor()">← Voltar</button>
+          <button class="btn btn-primary" onclick="goSuccess()">✓ Adicionar Nina a Carlos</button>
+        </div>
+      </div>
+
+    </div><!-- /form-area -->
+  </div><!-- /reg-body -->
+</div><!-- /view-register -->
+
+
+<!-- ═══════════════════════════════════════
+     VIEW 3: ATENDIMENTO
+═══════════════════════════════════════ -->
+<div id="view-atendimento" class="view">
+  <style>
+    /* ── Atendimento-specific styles ── */
+    #view-atendimento { flex-direction:column; min-height:100vh; }
+    .at-top { background:var(--text); height:54px; display:flex; align-items:center; padding:0 28px; gap:12px; flex-shrink:0; position:sticky; top:0; z-index:100; }
+    .at-top button { background:none; border:none; font-family:'DM Sans',sans-serif; cursor:pointer; }
+    .at-back { color:rgba(255,255,255,.45); font-size:13px; transition:color .15s; }
+    .at-back:hover { color:white; }
+    .at-logo { font-family:'Instrument Serif',serif !important; font-size:17px; color:white; }
+    .at-crumb { font-size:13px; color:rgba(255,255,255,.65); font-weight:500; }
+    .at-sep { color:rgba(255,255,255,.2); }
+    .at-status-pill { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; background:rgba(244,162,97,.18); color:#f4a261; }
+    .at-status-dot { width:7px; height:7px; border-radius:50%; background:#f4a261; animation:atblink 2s infinite; }
+    @keyframes atblink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .at-timelbl { font-size:12px; color:rgba(255,255,255,.3); }
+
+    .at-body { flex:1; display:grid; grid-template-columns:284px 1fr 260px; overflow:hidden; min-height:calc(100vh - 54px); }
+
+    /* Left */
+    .at-left { background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+    .at-pet-hdr { padding:20px 18px 14px; background:linear-gradient(155deg,var(--accent-light),#eaf5ef); border-bottom:1px solid var(--border); }
+    .at-pet-av { width:48px; height:48px; background:white; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 3px 10px rgba(0,0,0,.08); margin-bottom:10px; }
+    .at-pet-nm { font-family:'Instrument Serif',serif; font-size:21px; }
+    .at-pet-br { font-size:12.5px; color:var(--muted); margin-top:3px; }
+    .at-pet-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
+    .at-vmini { display:grid; grid-template-columns:1fr 1fr; gap:7px; padding:13px 16px; border-bottom:1px solid var(--border); }
+    .at-vb { background:var(--bg); border-radius:9px; padding:9px 11px; }
+    .at-vl { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin-bottom:2px; }
+    .at-vv { font-size:14px; font-weight:600; }
+    .at-lsec { padding:12px 16px; border-bottom:1px solid var(--border); }
+    .at-lsec:last-child { border-bottom:none; }
+    .at-lsec-t { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:600; margin-bottom:8px; }
+    .at-alert { display:flex; gap:8px; padding:9px 11px; background:var(--accent2-light); border-radius:8px; font-size:12px; color:var(--accent2); line-height:1.4; }
+    .at-tutor-r { display:flex; align-items:center; gap:9px; }
+    .at-tav { width:30px; height:30px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:white; flex-shrink:0; }
+    .at-hlist { display:flex; flex-direction:column; gap:5px; }
+    .at-hi { display:flex; gap:8px; padding:7px 9px; background:var(--bg); border-radius:8px; cursor:pointer; transition:background .12s; align-items:flex-start; }
+    .at-hi:hover { background:#ede9e3; }
+    .at-hi-ico { width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+    .at-hi-dt { font-size:10.5px; color:var(--muted); }
+    .at-hi-tx { font-size:12.5px; font-weight:500; }
+
+    /* Center */
+    .at-center { overflow-y:auto; display:flex; flex-direction:column; }
+    .at-secnav { display:flex; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10; overflow-x:auto; flex-shrink:0; }
+    .at-secnav::-webkit-scrollbar { height:0; }
+    .at-nb { display:flex; align-items:center; gap:5px; padding:12px 15px; font-size:13px; font-weight:500; color:var(--muted); border:none; background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; transition:all .15s; }
+    .at-nb:hover { color:var(--text); }
+    .at-nb.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .at-nb .dot { width:6px; height:6px; border-radius:50%; background:var(--border); flex-shrink:0; }
+    .at-nb.filled .dot { background:var(--accent); }
+    .at-form { padding:24px 28px; display:flex; flex-direction:column; gap:22px; }
+    .at-card { background:var(--surface); border:1px solid var(--border); border-radius:13px; overflow:hidden; }
+    .at-card-hdr { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:9px; background:var(--bg); }
+    .at-card-ico { font-size:17px; }
+    .at-card-title { font-size:14px; font-weight:600; }
+    .at-card-sub { font-size:12px; color:var(--muted); margin-left:auto; }
+    .at-card-body { padding:18px; }
+    .at-fl { font-size:12px; font-weight:500; color:var(--muted); display:block; margin-bottom:5px; }
+    .at-fc { background:var(--bg); border:1.5px solid var(--border); border-radius:9px; padding:9px 13px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; width:100%; transition:border-color .15s,box-shadow .15s; }
+    .at-fc:focus { border-color:var(--accent); background:white; box-shadow:0 0 0 3px rgba(45,106,79,.1); }
+    .at-fc::placeholder { color:#C0BAB2; }
+    select.at-fc { appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8077' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
+    textarea.at-fc { resize:none; line-height:1.6; }
+    .at-fg { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
+    .at-fg:last-child { margin-bottom:0; }
+    .at-gr2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .at-gr2 .at-fg { margin-bottom:0; }
+
+    /* Vitals large inputs */
+    .at-vgrid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:14px; }
+    .at-vi { display:flex; flex-direction:column; gap:5px; }
+    .at-vil { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+    .at-viw { position:relative; }
+    .at-vii { background:var(--bg); border:1.5px solid var(--border); border-radius:9px; padding:9px 30px 9px 10px; font-size:16px; font-weight:600; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; width:100%; transition:border-color .15s; }
+    .at-vii:focus { border-color:var(--accent); background:white; box-shadow:0 0 0 3px rgba(45,106,79,.1); }
+    .at-viu { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--muted); pointer-events:none; }
+
+    /* Chips */
+    .at-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .at-chip { padding:5px 11px; border-radius:20px; font-size:12.5px; font-weight:500; border:1.5px solid var(--border); background:white; cursor:pointer; transition:all .15s; color:var(--muted); }
+    .at-chip:hover { border-color:var(--accent); color:var(--accent); }
+    .at-chip.on { background:var(--accent); color:white; border-color:var(--accent); }
+
+    /* Med rows */
+    .at-med-hdr { display:grid; grid-template-columns:2fr 1fr 1fr 26px; gap:9px; padding:0 12px; margin-bottom:4px; }
+    .at-med-hdr span { font-size:10px; text-transform:uppercase; letter-spacing:.7px; color:var(--muted); font-weight:600; }
+    .at-medlist { display:flex; flex-direction:column; gap:7px; margin-bottom:9px; }
+    .at-medrow { display:grid; grid-template-columns:2fr 1fr 1fr 26px; gap:9px; align-items:center; padding:9px 12px; background:var(--bg); border-radius:9px; border:1px solid var(--border); }
+    .at-rm { background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; line-height:1; transition:color .12s; }
+    .at-rm:hover { color:var(--accent2); }
+    .at-addrow { display:flex; align-items:center; justify-content:center; gap:7px; padding:9px; border:1.5px dashed var(--accent); border-radius:9px; color:var(--accent); font-size:13px; font-weight:500; cursor:pointer; background:transparent; font-family:'DM Sans',sans-serif; transition:all .15s; width:100%; }
+    .at-addrow:hover { background:var(--accent-light); }
+
+    /* Exam rows */
+    .at-examlist { display:flex; flex-direction:column; gap:7px; margin-bottom:9px; }
+    .at-examrow { display:flex; align-items:center; gap:9px; padding:9px 12px; background:var(--bg); border-radius:9px; border:1px solid var(--border); }
+    .at-examname { flex:1; font-size:13.5px; font-weight:500; }
+    .at-urggrp { display:flex; gap:5px; }
+    .at-ub { padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:500; border:1.5px solid var(--border); background:white; cursor:pointer; color:var(--muted); font-family:'DM Sans',sans-serif; transition:all .12s; }
+    .at-ub.sel-n { background:var(--accent-light); color:var(--accent); border-color:var(--accent); }
+    .at-ub.sel-u { background:var(--accent2-light); color:var(--accent2); border-color:var(--accent2); }
+
+    /* Proc rows */
+    .at-proclist { display:flex; flex-direction:column; gap:7px; margin-bottom:9px; }
+    .at-procrow { display:flex; align-items:center; gap:10px; padding:9px 12px; background:var(--bg); border-radius:9px; border:1px solid var(--border); }
+    .at-chk { width:20px; height:20px; border-radius:6px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; flex-shrink:0; font-size:11px; font-weight:700; }
+    .at-chk.on { background:var(--accent); border-color:var(--accent); color:white; }
+    .at-addinline { display:flex; gap:8px; }
+
+    /* Right */
+    .at-right { background:var(--surface); border-left:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+    .at-rs { padding:15px; border-bottom:1px solid var(--border); }
+    .at-rs:last-child { border-bottom:none; }
+    .at-rs-t { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:600; margin-bottom:10px; }
+    .at-timerbox { background:var(--bg); border-radius:9px; padding:10px 12px; display:flex; align-items:center; gap:9px; }
+    .at-timerval { font-family:'Instrument Serif',serif; font-size:26px; }
+    .at-timerlbl { font-size:10.5px; color:var(--muted); }
+    .at-pglist { display:flex; flex-direction:column; gap:5px; }
+    .at-pg { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px; }
+    .at-pg.done { background:var(--accent-light); }
+    .at-pg.now { background:var(--yellow-light); }
+    .at-pgc { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; }
+    .at-pg.done .at-pgc { background:var(--accent); color:white; }
+    .at-pg.now .at-pgc { background:#f4a261; color:white; }
+    .at-pg.pend .at-pgc { background:var(--border); color:var(--muted); }
+    .at-pg-lbl { font-size:12px; font-weight:500; }
+    .at-pg.done .at-pg-lbl { color:var(--accent); }
+    .at-pg.now .at-pg-lbl { color:#b45309; }
+    .at-pg.pend .at-pg-lbl { color:var(--muted); }
+    .at-retbox { background:var(--bg); border-radius:9px; padding:10px; display:flex; flex-direction:column; gap:7px; }
+    .at-si { background:white; border:1.5px solid var(--border); border-radius:8px; padding:7px 9px; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; width:100%; transition:border-color .15s; }
+    .at-si:focus { border-color:var(--accent); }
+    select.at-si { appearance:none; cursor:pointer; }
+    .at-acts { display:flex; flex-direction:column; gap:7px; }
+
+    /* Conclusão overlay */
+    .at-overlay { position:fixed; inset:0; background:rgba(26,23,20,.55); z-index:300; display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .at-overlay.open { opacity:1; pointer-events:all; }
+    .at-modal { background:white; border-radius:18px; width:100%; max-width:420px; padding:32px; box-shadow:0 24px 80px rgba(0,0,0,.22); text-align:center; transform:translateY(10px); transition:transform .2s; }
+    .at-overlay.open .at-modal { transform:translateY(0); }
+    .at-m-ico { width:62px; height:62px; background:var(--accent-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px; }
+    .at-m-title { font-family:'Instrument Serif',serif; font-size:22px; margin-bottom:7px; }
+    .at-m-sub { font-size:14px; color:var(--muted); margin-bottom:22px; line-height:1.5; }
+    .at-m-acts { display:flex; flex-direction:column; gap:7px; }
+
+    /* Botão "＋ Atendimento" na ficha do pet */
+    .btn-atendimento { cursor:pointer; }
+  </style>
+
+  <!-- TOPBAR -->
+  <div class="at-top">
+    <button class="at-back" onclick="backToDashboard()">← Agenda</button>
+    <span class="at-sep" style="font-size:18px">|</span>
+    <span class="at-logo">🐾 VetCare</span>
+    <span class="at-sep">·</span>
+    <span class="at-crumb">Atendimento — <span id="atPetCrumb">Thor · Carlos Mendes</span></span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+      <div class="at-status-pill"><div class="at-status-dot"></div>Em andamento</div>
+      <span class="at-timelbl">Seg 23/02 · 14:00</span>
+    </div>
+  </div>
+
+  <div class="at-body">
+
+    <!-- ── LEFT: FICHA ── -->
+    <div class="at-left">
+      <div class="at-pet-hdr">
+        <div class="at-pet-av" id="atPetAv">🐶</div>
+        <div class="at-pet-nm" id="atPetNm">Thor</div>
+        <div class="at-pet-br">Golden Retriever · Macho · 4 anos</div>
+        <div class="at-pet-tags">
+          <span class="badge bg-green">✓ Vacinado</span>
+          <span class="badge bg-blue">Castrado</span>
+        </div>
+      </div>
+
+      <div class="at-vmini">
+        <div class="at-vb"><div class="at-vl">Peso</div><div class="at-vv">28,5 <span style="font-size:10px;font-weight:400;color:var(--muted)">kg</span></div></div>
+        <div class="at-vb"><div class="at-vl">Última visita</div><div class="at-vv" style="font-size:13px">15/02/26</div></div>
+        <div class="at-vb" style="grid-column:1/-1"><div class="at-vl">Alergias</div><div class="at-vv" style="font-size:13px;color:var(--accent2)">⚠ Dipirona</div></div>
+      </div>
+
+      <div class="at-lsec">
+        <div class="at-alert">⚠ Retorno solicitado em 15/01 — avaliar resposta ao suplemento articular.</div>
+      </div>
+
+      <div class="at-lsec">
+        <div class="at-lsec-t">Tutor</div>
+        <div class="at-tutor-r">
+          <div class="at-tav">CM</div>
+          <div><div style="font-size:13.5px;font-weight:500">Carlos Mendes</div><div style="font-size:12px;color:var(--muted)">📱 (11) 99234-5678</div></div>
+        </div>
+      </div>
+
+      <div class="at-lsec">
+        <div class="at-lsec-t">Histórico recente</div>
+        <div class="at-hlist">
+          <div class="at-hi"><div class="at-hi-ico" style="background:var(--accent-light)">🩺</div><div><div class="at-hi-dt">15/02/2026</div><div class="at-hi-tx">Consulta de rotina</div></div></div>
+          <div class="at-hi"><div class="at-hi-ico" style="background:#e8f0fe">💉</div><div><div class="at-hi-dt">10/01/2026</div><div class="at-hi-tx">Vacinação V10 + Antirrábica</div></div></div>
+          <div class="at-hi"><div class="at-hi-ico" style="background:var(--accent2-light)">🔬</div><div><div class="at-hi-dt">05/09/2025</div><div class="at-hi-tx">Hemograma completo</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CENTER: FORMULÁRIO ── -->
+    <div class="at-center">
+
+      <!-- Nav seções -->
+      <div class="at-secnav">
+        <button class="at-nb active filled" onclick="atNavTo('ats1',this)"><span class="dot"></span>Anamnese</button>
+        <button class="at-nb filled" onclick="atNavTo('ats2',this)"><span class="dot"></span>Exame Físico</button>
+        <button class="at-nb" onclick="atNavTo('ats3',this)"><span class="dot"></span>Diagnóstico</button>
+        <button class="at-nb" onclick="atNavTo('ats4',this)"><span class="dot"></span>Prescrição</button>
+        <button class="at-nb" onclick="atNavTo('ats5',this)"><span class="dot"></span>Exames</button>
+        <button class="at-nb" onclick="atNavTo('ats6',this)"><span class="dot"></span>Procedimentos</button>
+        <button class="at-nb" onclick="atNavTo('ats7',this)"><span class="dot"></span>Observações</button>
+      </div>
+
+      <div class="at-form">
+
+        <!-- 1. ANAMNESE -->
+        <div class="at-card" id="ats1">
+          <div class="at-card-hdr"><span class="at-card-ico">📋</span><span class="at-card-title">Anamnese</span><span class="at-card-sub">Queixa e histórico</span></div>
+          <div class="at-card-body">
+            <div class="at-fg"><label class="at-fl">Queixa principal <span style="color:var(--accent2)">*</span></label><input class="at-fc" type="text" value="Dificuldade de locomoção no membro posterior direito. Tutor relata piora após exercício físico."></div>
+            <div class="at-gr2">
+              <div class="at-fg"><label class="at-fl">Início dos sintomas</label><input class="at-fc" type="date" value="2026-02-20"></div>
+              <div class="at-fg"><label class="at-fl">Evolução</label><select class="at-fc"><option>Progressiva</option><option>Estável</option><option>Melhora</option><option>Piora</option><option>Intermitente</option></select></div>
+            </div>
+            <div class="at-fg" style="margin-top:13px"><label class="at-fl">Histórico relevante</label><textarea class="at-fc" rows="3">Em uso de suplemento articular (Cosequin) desde 15/01. Sem outros medicamentos. Não viajou recentemente.</textarea></div>
+            <div class="at-fg"><label class="at-fl">Alimentação / Água</label><textarea class="at-fc" rows="2">Ração premium adulto, 400g/dia. Apetite preservado. Consumo de água normal.</textarea></div>
+          </div>
+        </div>
+
+        <!-- 2. EXAME FÍSICO -->
+        <div class="at-card" id="ats2">
+          <div class="at-card-hdr"><span class="at-card-ico">🌡️</span><span class="at-card-title">Exame Físico</span><span class="at-card-sub">Parâmetros e achados</span></div>
+          <div class="at-card-body">
+            <div class="at-vgrid">
+              <div class="at-vi"><div class="at-vil">Peso</div><div class="at-viw"><input class="at-vii" type="number" value="28.5" step="0.1"><span class="at-viu">kg</span></div></div>
+              <div class="at-vi"><div class="at-vil">Temp.</div><div class="at-viw"><input class="at-vii" type="number" value="38.6" step="0.1"><span class="at-viu">°C</span></div></div>
+              <div class="at-vi"><div class="at-vil">FC</div><div class="at-viw"><input class="at-vii" type="number" value="88"><span class="at-viu">bpm</span></div></div>
+              <div class="at-vi"><div class="at-vil">FR</div><div class="at-viw"><input class="at-vii" type="number" value="22"><span class="at-viu">mpm</span></div></div>
+              <div class="at-vi"><div class="at-vil">TPC</div><div class="at-viw"><input class="at-vii" type="number" value="2" step="0.5"><span class="at-viu">seg</span></div></div>
+            </div>
+            <div class="at-fg"><label class="at-fl">Estado geral</label>
+              <div class="at-chips"><div class="at-chip on" onclick="atOneChip(this)">Bom</div><div class="at-chip" onclick="atOneChip(this)">Regular</div><div class="at-chip" onclick="atOneChip(this)">Ruim</div><div class="at-chip" onclick="atOneChip(this)">Crítico</div></div>
+            </div>
+            <div class="at-gr2" style="margin-bottom:13px">
+              <div><label class="at-fl">Mucosas</label>
+                <div class="at-chips"><div class="at-chip on" onclick="atOneChip(this)">Normocoradas</div><div class="at-chip" onclick="atOneChip(this)">Pálidas</div><div class="at-chip" onclick="atOneChip(this)">Ictéricas</div><div class="at-chip" onclick="atOneChip(this)">Cianóticas</div></div>
+              </div>
+              <div><label class="at-fl">Hidratação</label>
+                <div class="at-chips"><div class="at-chip on" onclick="atOneChip(this)">&lt;5% Normal</div><div class="at-chip" onclick="atOneChip(this)">5–8%</div><div class="at-chip" onclick="atOneChip(this)">&gt;8%</div></div>
+              </div>
+            </div>
+            <div class="at-gr2">
+              <div class="at-fg"><label class="at-fl">Cardiovascular</label><textarea class="at-fc" rows="2">Ritmo sinusal, bulhas normofonéticas, sem sopros.</textarea></div>
+              <div class="at-fg"><label class="at-fl">Respiratório</label><textarea class="at-fc" rows="2">MVF presente bilateralmente, sem ruídos adventícios.</textarea></div>
+              <div class="at-fg"><label class="at-fl">Locomotor</label><textarea class="at-fc" rows="2">Claudicação grau 2/5 em MPD. Dor à palpação da art. coxofemoral D. Crepitação discreta.</textarea></div>
+              <div class="at-fg"><label class="at-fl">Outros achados</label><textarea class="at-fc" rows="2">Abdômen sem alterações. Linfonodos não reativos.</textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. DIAGNÓSTICO -->
+        <div class="at-card" id="ats3">
+          <div class="at-card-hdr"><span class="at-card-ico">🔎</span><span class="at-card-title">Diagnóstico</span><span class="at-card-sub">Definitivo ou presuntivo</span></div>
+          <div class="at-card-body">
+            <div class="at-fg"><label class="at-fl">Diagnóstico principal <span style="color:var(--accent2)">*</span></label><input class="at-fc" type="text" value="Displasia coxofemoral — suspeita. Aguardar raio-x para confirmação."></div>
+            <div class="at-fg"><label class="at-fl">Tipo</label>
+              <div class="at-chips"><div class="at-chip on" onclick="atOneChip(this)">Presuntivo</div><div class="at-chip" onclick="atOneChip(this)">Definitivo</div><div class="at-chip" onclick="atOneChip(this)">Diferencial</div><div class="at-chip" onclick="atOneChip(this)">Sintomático</div></div>
+            </div>
+            <div class="at-gr2">
+              <div class="at-fg"><label class="at-fl">CID (opcional)</label><input class="at-fc" type="text" placeholder="Ex: M16.1"></div>
+              <div class="at-fg"><label class="at-fl">Prognóstico</label><select class="at-fc"><option>Favorável</option><option>Reservado</option><option>Desfavorável</option><option>Aguardando exames</option></select></div>
+            </div>
+            <div class="at-fg" style="margin-top:13px"><label class="at-fl">Diagnósticos diferenciais</label><textarea class="at-fc" rows="2">Ruptura de ligamento cruzado cranial, artrite séptica.</textarea></div>
+          </div>
+        </div>
+
+        <!-- 4. PRESCRIÇÃO -->
+        <div class="at-card" id="ats4">
+          <div class="at-card-hdr"><span class="at-card-ico">💊</span><span class="at-card-title">Prescrição</span><span class="at-card-sub">Medicamentos e doses</span></div>
+          <div class="at-card-body">
+            <div class="at-med-hdr"><span>Medicamento</span><span>Dose / Freq.</span><span>Duração</span><span></span></div>
+            <div class="at-medlist" id="atMedList">
+              <div class="at-medrow"><input class="at-fc" type="text" value="Meloxicam 0,5 mg/kg"><input class="at-fc" type="text" value="1x ao dia (com comida)"><input class="at-fc" type="text" value="7 dias"><button class="at-rm" onclick="this.closest('.at-medrow').remove()">✕</button></div>
+              <div class="at-medrow"><input class="at-fc" type="text" value="Cosequin DS — manutenção"><input class="at-fc" type="text" value="1x ao dia"><input class="at-fc" type="text" value="Contínuo"><button class="at-rm" onclick="this.closest('.at-medrow').remove()">✕</button></div>
+            </div>
+            <button class="at-addrow" onclick="atAddMed()">＋ Adicionar medicamento</button>
+            <div class="at-fg" style="margin-top:14px"><label class="at-fl">Orientações ao tutor</label><textarea class="at-fc" rows="2">Dar Meloxicam com alimentação para evitar irritação gástrica. Retornar se houver vômito ou piora.</textarea></div>
+          </div>
+        </div>
+
+        <!-- 5. EXAMES -->
+        <div class="at-card" id="ats5">
+          <div class="at-card-hdr"><span class="at-card-ico">🔬</span><span class="at-card-title">Solicitação de Exames</span><span class="at-card-sub">Lab e imagem</span></div>
+          <div class="at-card-body">
+            <div class="at-examlist" id="atExamList">
+              <div class="at-examrow"><div class="at-examname">Raio-X — bacia (2 incidências)</div><div class="at-urggrp"><button class="at-ub sel-n" onclick="atUrg(this,'n')">Normal</button><button class="at-ub" onclick="atUrg(this,'u')">Urgente</button></div><button class="at-rm" onclick="this.closest('.at-examrow').remove()">✕</button></div>
+              <div class="at-examrow"><div class="at-examname">Hemograma completo</div><div class="at-urggrp"><button class="at-ub sel-n" onclick="atUrg(this,'n')">Normal</button><button class="at-ub" onclick="atUrg(this,'u')">Urgente</button></div><button class="at-rm" onclick="this.closest('.at-examrow').remove()">✕</button></div>
+            </div>
+            <div class="at-addinline" style="margin-bottom:14px"><input class="at-fc" id="atExamInp" type="text" placeholder="Nome do exame..." style="flex:1"><button class="btn btn-ghost btn-sm" onclick="atAddExam()">＋</button></div>
+            <div class="at-fg"><label class="at-fl">Justificativa clínica</label><textarea class="at-fc" rows="2">Raio-X para confirmação de DCF. Hemograma baseline antes de iniciar AINE.</textarea></div>
+          </div>
+        </div>
+
+        <!-- 6. PROCEDIMENTOS -->
+        <div class="at-card" id="ats6">
+          <div class="at-card-hdr"><span class="at-card-ico">🩺</span><span class="at-card-title">Procedimentos Realizados</span><span class="at-card-sub">Nesta consulta</span></div>
+          <div class="at-card-body">
+            <div class="at-proclist" id="atProcList">
+              <div class="at-procrow"><div class="at-chk on" onclick="atTogChk(this)">✓</div><div><div style="font-size:13.5px;font-weight:500">Exame clínico geral</div></div></div>
+              <div class="at-procrow"><div class="at-chk on" onclick="atTogChk(this)">✓</div><div><div style="font-size:13.5px;font-weight:500">Palpação articular</div><div style="font-size:12px;color:var(--muted)">Art. coxofemoral D</div></div></div>
+              <div class="at-procrow"><div class="at-chk" onclick="atTogChk(this)"></div><div><div style="font-size:13.5px;font-weight:500">Coleta de sangue</div><div style="font-size:12px;color:var(--muted)">Hemograma + bioquímico</div></div></div>
+              <div class="at-procrow"><div class="at-chk" onclick="atTogChk(this)"></div><div><div style="font-size:13.5px;font-weight:500">Aplicação de medicamento</div></div></div>
+            </div>
+            <div class="at-addinline"><input class="at-fc" id="atProcInp" type="text" placeholder="Outro procedimento..." style="flex:1"><button class="btn btn-ghost btn-sm" onclick="atAddProc()">＋</button></div>
+          </div>
+        </div>
+
+        <!-- 7. OBSERVAÇÕES -->
+        <div class="at-card" id="ats7">
+          <div class="at-card-hdr"><span class="at-card-ico">📝</span><span class="at-card-title">Observações e Conduta</span><span class="at-card-sub">Recomendações finais</span></div>
+          <div class="at-card-body">
+            <div class="at-gr2" style="margin-bottom:13px">
+              <div class="at-fg"><label class="at-fl">Restrições / Recomendações</label><textarea class="at-fc" rows="4">Restrição de exercícios intensos por 14 dias. Passeios curtos na coleira (5–10 min), 2x/dia. Compressas mornas na articulação 2x/dia por 10 min.</textarea></div>
+              <div class="at-fg"><label class="at-fl">Sinais de alerta para o tutor</label><textarea class="at-fc" rows="4">Retornar imediatamente se: parar de comer, piora abrupta da dor, inchaço/calor na articulação, vômito após medicação.</textarea></div>
+            </div>
+            <div class="at-fg"><label class="at-fl">Notas internas <span style="font-size:11px;color:var(--muted);font-weight:400">(não aparecem na receita)</span></label><textarea class="at-fc" rows="2">Suspeita forte de DCF. Se raio-x confirmar, avaliar fisioterapia + cirurgia (FHO). Acionar ortopedista parceiro.</textarea></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── RIGHT: AÇÕES ── -->
+    <div class="at-right">
+
+      <div class="at-rs">
+        <div class="at-rs-t">Tempo de Atendimento</div>
+        <div class="at-timerbox">
+          <div><div class="at-timerval" id="atTimerVal">00:00:00</div><div class="at-timerlbl">em andamento</div></div>
+          <button id="atTimerBtn" onclick="atTogTimer()" class="btn btn-ghost btn-sm" style="margin-left:auto;padding:6px 11px;font-size:12px">⏸ Pausar</button>
+        </div>
+      </div>
+
+      <div class="at-rs">
+        <div class="at-rs-t">Progresso</div>
+        <div class="at-pglist">
+          <div class="at-pg done"><div class="at-pgc">✓</div><span class="at-pg-lbl">Anamnese</span></div>
+          <div class="at-pg done"><div class="at-pgc">✓</div><span class="at-pg-lbl">Exame físico</span></div>
+          <div class="at-pg now"><div class="at-pgc">●</div><span class="at-pg-lbl">Diagnóstico</span></div>
+          <div class="at-pg pend"><div class="at-pgc">4</div><span class="at-pg-lbl">Prescrição</span></div>
+          <div class="at-pg pend"><div class="at-pgc">5</div><span class="at-pg-lbl">Exames</span></div>
+          <div class="at-pg pend"><div class="at-pgc">6</div><span class="at-pg-lbl">Procedimentos</span></div>
+          <div class="at-pg pend"><div class="at-pgc">7</div><span class="at-pg-lbl">Observações</span></div>
+        </div>
+      </div>
+
+      <div class="at-rs">
+        <div class="at-rs-t">Agendar Retorno</div>
+        <div class="at-retbox">
+          <input class="at-si" type="date" value="2026-03-09">
+          <div style="display:flex;gap:7px">
+            <input class="at-si" type="time" value="14:00" style="flex:1">
+            <select class="at-si" style="flex:1.3"><option>Retorno</option><option>Vacinação</option><option>Exame</option><option>Cirurgia</option></select>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;font-size:12px">📅 Confirmar</button>
+        </div>
+      </div>
+
+      <div class="at-rs">
+        <div class="at-rs-t">Finalizar</div>
+        <div class="at-acts">
+          <button class="btn btn-ghost btn-sm" style="justify-content:center;font-size:12px">💾 Salvar rascunho</button>
+          <button class="btn btn-primary" style="justify-content:center;padding:12px;font-size:14px" onclick="document.getElementById('atOverlay').classList.add('open')">✓ Concluir e voltar à agenda</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY CONCLUSÃO -->
+<div class="at-overlay" id="atOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="at-modal">
+    <div class="at-m-ico">✅</div>
+    <div class="at-m-title">Atendimento concluído!</div>
+    <div class="at-m-sub">Prontuário salvo no histórico de <strong>Thor</strong>.<br>Retorno agendado para 09/03/2026 às 14:00.</div>
+    <div class="at-m-acts">
+      <button class="btn btn-primary" style="justify-content:center;font-size:14px" onclick="document.getElementById('atOverlay').classList.remove('open');backToDashboard()">← Voltar à agenda do dia</button>
+      <button class="btn btn-ghost" style="justify-content:center;font-size:13px" onclick="document.getElementById('atOverlay').classList.remove('open')">🖨️ Imprimir receita</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── VIEW SWITCHING ─── */
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function backToDashboard() { showView('view-dashboard'); }
+function goToRegister(scenario) {
+  showView('view-register');
+  const btn = document.getElementById(scenario === 'new' ? 'sc-new' : 'sc-addpet');
+  setScenario(scenario, btn);
+}
+function goToAtendimento(petName, petIcon) {
+  if (petName) {
+    document.getElementById('atPetCrumb').textContent = petName + ' · Carlos Mendes';
+    if (document.getElementById('atPetNm')) document.getElementById('atPetNm').textContent = petName;
+    if (petIcon && document.getElementById('atPetAv')) document.getElementById('atPetAv').textContent = petIcon;
+  }
+  // Reset timer
+  atSecs = 0; atRunning = true;
+  document.getElementById('atTimerVal').textContent = '00:00:00';
+  document.getElementById('atTimerBtn').textContent = '⏸ Pausar';
+  showView('view-atendimento');
+}
+
+/* ─── DASHBOARD TABS ─── */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tp-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const map = {dashboard:'tab-dashboard', pets:'tab-pets', tutores:'tab-tutores'};
+  if (map[name]) document.getElementById(map[name]).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ─── MODALS ─── */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+/* ─── FILTER ─── */
+function setFilter(btn) {
+  btn.closest('.filter-bar').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ─── TUTOR TABLE EXPAND ─── */
+document.querySelectorAll('#tutoresTable tr[data-expand]').forEach(row => {
+  row.addEventListener('click', function(e) {
+    if (e.target.closest('button')) return;
+    const id = this.getAttribute('data-expand');
+    const expRow = document.getElementById(id);
+    const isOpen = expRow.style.display !== 'none';
+    document.querySelectorAll('.expand-row').forEach(r => r.style.display = 'none');
+    if (!isOpen) expRow.style.display = 'table-row';
+  });
+});
+
+/* ─── SCENARIO ─── */
+function setScenario(name, btn) {
+  document.querySelectorAll('.sc-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+  if (name === 'new') {
+    document.getElementById('progTitle').textContent = 'Cadastro de Tutor';
+    document.getElementById('progSub').textContent = 'Tutor novo. Pelo menos um pet é obrigatório.';
+    document.getElementById('stepsWrap').style.display = '';
+    document.getElementById('sbPets').style.display = 'none';
+    goStep(1);
+  } else {
+    document.getElementById('progTitle').textContent = 'Adicionar Pet';
+    document.getElementById('progSub').textContent = '1. Escolha o tutor\n2. Dados do novo pet';
+    document.getElementById('stepsWrap').style.display = 'none';
+    document.getElementById('sbPets').style.display = 'none';
+    document.getElementById('rsFindTutor').classList.add('active');
+  }
+}
+
+/* ─── STEP NAVIGATION ─── */
+function goStep(n) {
+  document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('rs' + n).classList.add('active');
+  for (let i = 1; i <= 3; i++) {
+    const d = document.getElementById('sd' + i);
+    d.classList.remove('s-done', 's-active');
+    if (i < n) d.classList.add('s-done');
+    else if (i === n) d.classList.add('s-active');
+  }
+  document.getElementById('sbPets').style.display = n >= 2 ? 'block' : 'none';
+}
+function goSuccess() {
+  document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('rsSuccess').classList.add('active');
+  for (let i = 1; i <= 3; i++) {
+    const d = document.getElementById('sd' + i);
+    d.classList.remove('s-active');
+    d.classList.add('s-done');
+    d.querySelector('.step-circle').textContent = '✓';
+  }
+}
+
+/* ─── SCENARIO 2 ─── */
+function goToFindTutor() {
+  document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('rsFindTutor').classList.add('active');
+  document.getElementById('sbPets').style.display = 'none';
+  document.getElementById('btnNextToAddPet').disabled = true;
+}
+function goToAddPetStep() {
+  document.querySelectorAll('.reg-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('rsAddPet').classList.add('active');
+}
+function selectTutorForPet(el, name, initials, info) {
+  document.querySelectorAll('.search-result-row').forEach(r => r.style.background = '');
+  el.style.background = 'var(--accent-light)';
+  document.getElementById('tbAv').textContent = initials;
+  document.getElementById('tbName').textContent = name;
+  document.getElementById('tbInfo').textContent = info;
+  document.getElementById('btnNextToAddPet').disabled = false;
+}
+function showSearchResults(val) {}
+
+/* ─── PET FORM ─── */
+function showPetForm() {
+  document.getElementById('petFormInline').style.display = 'block';
+  document.getElementById('btnAddPet').style.display = 'none';
+}
+function hidePetForm() {
+  document.getElementById('petFormInline').style.display = 'none';
+  document.getElementById('btnAddPet').style.display = 'flex';
+}
+function addPetCard() {
+  const area = document.getElementById('petCardsArea');
+  const card = document.createElement('div');
+  card.className = 'pet-card-filled';
+  card.innerHTML = `<div class="pca-icon">🐱</div><div style="flex:1"><div class="pca-name">Mimi</div><div class="pca-detail">Persa · Fêmea · Não castrada</div></div><div class="pca-actions"><button class="btn btn-ghost btn-icon">✏️</button><button class="btn btn-ghost btn-icon" style="color:var(--accent2)" onclick="this.closest('.pet-card-filled').remove()">✕</button></div>`;
+  area.appendChild(card);
+  hidePetForm();
+  const list = document.getElementById('sbPetList');
+  const item = document.createElement('div');
+  item.className = 'sb-pet-item';
+  item.innerHTML = `<span class="sb-pet-icon">🐱</span><span class="sb-pet-name">Mimi</span><button class="sb-pet-rm">✕</button>`;
+  list.appendChild(item);
+}
+
+/* ─── SPECIES / SEX / CASTRADO ─── */
+function selSpecies(el) {
+  el.closest('.species-picker').querySelectorAll('.sp-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function selSex(el) {
+  el.closest('.sex-toggle').querySelectorAll('.sex-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function togCastrado(container) {
+  const tog = container.querySelector('.tog-switch');
+  tog.classList.toggle('on');
+}
+
+/* ══════════════════════════════════
+   ATENDIMENTO JS
+══════════════════════════════════ */
+
+/* Section nav */
+function atNavTo(id, btn) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.at-nb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active', 'filled');
+}
+
+/* One-chip select (within parent container) */
+function atOneChip(el) {
+  el.closest('.at-chips').querySelectorAll('.at-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* Proc checkbox toggle */
+function atTogChk(el) {
+  const on = el.classList.toggle('on');
+  el.textContent = on ? '✓' : '';
+}
+
+/* Urgency */
+function atUrg(btn, type) {
+  btn.closest('.at-urggrp').querySelectorAll('.at-ub').forEach(b => { b.classList.remove('sel-n','sel-u'); });
+  btn.classList.add(type === 'u' ? 'sel-u' : 'sel-n');
+}
+
+/* Add med row */
+function atAddMed() {
+  const row = document.createElement('div');
+  row.className = 'at-medrow';
+  row.innerHTML = `<input class="at-fc" type="text" placeholder="Medicamento"><input class="at-fc" type="text" placeholder="Dose / Freq."><input class="at-fc" type="text" placeholder="Duração"><button class="at-rm" onclick="this.closest('.at-medrow').remove()">✕</button>`;
+  document.getElementById('atMedList').appendChild(row);
+  row.querySelector('input').focus();
+}
+
+/* Add exam */
+function atAddExam() {
+  const inp = document.getElementById('atExamInp');
+  if (!inp.value.trim()) return;
+  const row = document.createElement('div');
+  row.className = 'at-examrow';
+  row.innerHTML = `<div class="at-examname">${inp.value}</div><div class="at-urggrp"><button class="at-ub sel-n" onclick="atUrg(this,'n')">Normal</button><button class="at-ub" onclick="atUrg(this,'u')">Urgente</button></div><button class="at-rm" onclick="this.closest('.at-examrow').remove()">✕</button>`;
+  document.getElementById('atExamList').appendChild(row);
+  inp.value = '';
+}
+
+/* Add proc */
+function atAddProc() {
+  const inp = document.getElementById('atProcInp');
+  if (!inp.value.trim()) return;
+  const row = document.createElement('div');
+  row.className = 'at-procrow';
+  row.innerHTML = `<div class="at-chk" onclick="atTogChk(this)"></div><div><div style="font-size:13.5px;font-weight:500">${inp.value}</div></div><button class="at-rm" onclick="this.closest('.at-procrow').remove()">✕</button>`;
+  document.getElementById('atProcList').appendChild(row);
+  inp.value = '';
+}
+
+/* Timer */
+let atSecs = 0, atRunning = false;
+setInterval(() => {
+  if (!atRunning) return;
+  atSecs++;
+  const h = String(Math.floor(atSecs/3600)).padStart(2,'0');
+  const m = String(Math.floor((atSecs%3600)/60)).padStart(2,'0');
+  const s = String(atSecs%60).padStart(2,'0');
+  const el = document.getElementById('atTimerVal');
+  if (el) el.textContent = h+':'+m+':'+s;
+}, 1000);
+function atTogTimer() {
+  atRunning = !atRunning;
+  const btn = document.getElementById('atTimerBtn');
+  if (btn) btn.textContent = atRunning ? '⏸ Pausar' : '▶ Retomar';
+}
+
+/* Wire up "＋ Atendimento" button in fichaPetModal */
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('#fichaPetModal .btn-primary');
+  if (btn && btn.textContent.includes('Atendimento')) {
+    btn.classList.add('btn-atendimento');
+    btn.addEventListener('click', () => {
+      closeModal('fichaPetModal');
+      goToAtendimento('Thor', '🐶');
+    });
+  }
+  // Wire agenda rows
+  document.querySelectorAll('#tp-dashboard .table tbody tr').forEach(tr => {
+    tr.addEventListener('click', function() {
+      const petEl = this.querySelector('.pet-name');
+      const iconEl = this.querySelector('.pet-avatar');
+      const name = petEl ? petEl.textContent : 'Pet';
+      const icon = iconEl ? iconEl.textContent : '🐾';
+      closeModal && closeModal('fichaPetModal');
+      goToAtendimento(name, icon);
+    });
+  });
+});
+</script>
+</body>
+</html>
