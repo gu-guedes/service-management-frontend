@@ -1,0 +1,27 @@
+<section class="login-page">
+  <div class="login-card">
+    <header>
+      <p class="brand">VetCare</p>
+      <h1>Entrar</h1>
+      <p>Acesse seu painel de gestao clinica</p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <label>
+        Usuario
+        <input type="text" formControlName="username" placeholder="seu usuario" autocomplete="username" />
+      </label>
+
+      <label>
+        Senha
+        <input type="password" formControlName="password" placeholder="sua senha" autocomplete="current-password" />
+      </label>
+
+      <div class="error" *ngIf="authError">{{ authError }}</div>
+
+      <button class="primary-btn" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+  </div>
+</section>
