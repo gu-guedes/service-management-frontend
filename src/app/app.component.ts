@@ -3,11 +3,11 @@ import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { DashboardViewComponent } from './components/dashboard-view.component';
-import { CareViewComponent } from './components/care-view.component';
-import { PetsViewComponent } from './components/pets-view.component';
-import { RegistrationViewComponent } from './components/registration-view.component';
-import { TutorsViewComponent } from './components/tutors-view.component';
+import { DashboardViewComponent } from './features/dashboard/components/dashboard-view.component';
+import { CareViewComponent } from './features/care/components/care-view.component';
+import { PetsViewComponent } from './features/pets/components/pets-view.component';
+import { RegistrationViewComponent } from './features/registration/components/registration-view.component';
+import { TutorsViewComponent } from './features/tutors/components/tutors-view.component';
 import { AuthService } from './services/auth.service';
 import { RegistrationService } from './services/registration.service';
 
