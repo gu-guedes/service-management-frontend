@@ -8,6 +8,15 @@ import { CareViewComponent } from './features/care/components/care-view.componen
 import { PetsViewComponent } from './features/pets/components/pets-view.component';
 import { RegistrationViewComponent } from './features/registration/components/registration-view.component';
 import { TutorsViewComponent } from './features/tutors/components/tutors-view.component';
+import { Appointment, StatItem, VaccineAlert } from './features/dashboard/models/dashboard.models';
+import {
+  FilterOption,
+  PetCareProfile,
+  PetFilter,
+  PetRecord,
+  TimelineEntry
+} from './features/pets/models/pets.models';
+import { TutorRecord } from './features/tutors/models/tutors.models';
 import { AuthService } from './services/auth.service';
 import { RegistrationService } from './services/registration.service';
 
@@ -19,73 +28,8 @@ interface NavItem {
   badge?: string;
 }
 
-interface StatItem {
-  label: string;
-  value: string;
-  delta: string;
-  icon: string;
-  iconClass: string;
-}
-
-interface Appointment {
-  time: string;
-  pet: string;
-  tutor: string;
-  procedure: string;
-  status: string;
-  statusClass: string;
-}
-
-interface VaccineAlert {
-  pet: string;
-  detail: string;
-  urgency: string;
-  urgencyClass: string;
-}
-
-type PetFilter = 'all' | 'dog' | 'cat' | 'other' | 'vaccine' | 'return';
-
-interface PetRecord {
-  name: string;
-  species: 'dog' | 'cat' | 'other';
-  summary: string;
-  tutor: string;
-  tutorInitials: string;
-  lastVisit: string;
-  status: string;
-  statusClass: string;
-  statusType: 'vaccine' | 'return' | 'ok';
-}
-
-interface FilterOption {
-  key: PetFilter;
-  label: string;
-}
-
-interface TutorPet {
-  name: string;
-  details: string;
-  icon: string;
-}
-
-interface TutorRecord {
-  id: string;
-  name: string;
-  cpf: string;
-  phone: string;
-  initials: string;
-  lastVisit: string;
-  pets: TutorPet[];
-}
-
 type ActiveModal = 'pet' | 'tutor' | null;
 type RegistrationScenario = 'new' | 'addpet';
-
-interface TimelineEntry {
-  date: string;
-  title: string;
-  description: string;
-}
 
 interface RegistrationPetPayload {
   name: string;
@@ -126,12 +70,6 @@ interface CareProcedureItem {
   done: boolean;
 }
 
-interface PetCareProfile {
-  weightLabel: string;
-  allergiesLabel: string;
-  alertMessage: string;
-  tags: Array<{ label: string; className: string }>;
-}
 
 @Component({
   selector: 'app-root',
