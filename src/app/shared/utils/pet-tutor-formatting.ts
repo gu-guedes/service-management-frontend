@@ -67,6 +67,23 @@ export function toTodayIso(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+// amanha, no formato yyyy-MM-dd
+export function toTomorrowIso(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+}
+
+// rotulo de urgencia de um retorno ja filtrado como "devido" (hoje, atrasado ou amanha)
+export function followUpUrgencyLabel(dateOnlyIso: string | null | undefined): 'Atrasado' | 'Hoje' | 'Amanha' | '' {
+  if (!dateOnlyIso) return '';
+
+  const today = toTodayIso();
+  if (dateOnlyIso < today) return 'Atrasado';
+  if (dateOnlyIso === today) return 'Hoje';
+  return 'Amanha';
+}
+
 export function toBrDateFromIso(iso: string | null | undefined): string {
   if (!iso) return '--/--/----';
 

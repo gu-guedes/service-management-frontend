@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
-import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
+import { followUpUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
   selector: 'app-pets-view',
@@ -12,15 +12,18 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
       <article class="card due-followups-card" *ngIf="dueFollowUps.length">
         <header class="card-header pets-header">
           <div>
-            <h3>🔔 Retornos de hoje</h3>
-            <p>{{ dueFollowUps.length }} {{ dueFollowUps.length === 1 ? 'lembrete pendente' : 'lembretes pendentes' }}</p>
+            <h3>🔔 Retornos pendentes</h3>
+            <p>{{ dueFollowUps.length }} {{ dueFollowUps.length === 1 ? 'lembrete' : 'lembretes' }} — hoje, atrasados ou amanha</p>
           </div>
         </header>
 
         <div class="due-followups-list">
           <div class="due-followup-item" *ngFor="let record of dueFollowUps">
             <div>
-              <p class="strong">{{ record.patientName }}</p>
+              <p class="strong">
+                {{ record.patientName }}
+                <span class="badge" [ngClass]="urgencyBadgeClass(record.followUpDate)">{{ urgencyLabel(record.followUpDate) }}</span>
+              </p>
               <p class="sub">{{ record.treatment }}</p>
               <p class="sub">Retorno: {{ formatFollowUpDate(record.followUpDate) }}</p>
             </div>
@@ -132,6 +135,18 @@ export class PetsViewComponent {
 
   formatFollowUpDate(dateOnlyIso: string | null): string {
     return toBrDateFromDateOnly(dateOnlyIso);
+  }
+
+  urgencyLabel(dateOnlyIso: string | null): string {
+    const label = followUpUrgencyLabel(dateOnlyIso);
+    return label === 'Amanha' ? 'Amanhã' : label;
+  }
+
+  urgencyBadgeClass(dateOnlyIso: string | null): string {
+    const label = followUpUrgencyLabel(dateOnlyIso);
+    if (label === 'Atrasado') return 'is-orange';
+    if (label === 'Hoje') return 'is-green';
+    return 'is-gray';
   }
 
   getPetEmoji(species: 'dog' | 'cat' | 'other'): string {

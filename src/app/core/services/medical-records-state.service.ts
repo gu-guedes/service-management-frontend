@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { MedicalRecordResponseDTO } from './medical-records-api.service';
-import { toTodayIso } from '../../shared/utils/pet-tutor-formatting';
+import { toTodayIso, toTomorrowIso } from '../../shared/utils/pet-tutor-formatting';
 
 // -------------------------------------------------------------------
 // Serviço de estado dos prontuários (medical records)
@@ -14,17 +14,25 @@ export class MedicalRecordsStateService {
 
   readonly records = this._records.asReadonly();
 
-  // atendimentos com retorno vencendo hoje ou atrasado, ainda nao marcado como feito —
-  // usado pra mostrar o painel "Retornos de hoje" sem precisar abrir o prontuario
+  // atendimentos com retorno atrasado, vencendo hoje ou amanha, ainda nao marcado como feito —
+  // usado pra mostrar o painel de retornos pendentes sem precisar abrir o prontuario
   readonly dueFollowUps = computed(() => {
-    const today = toTodayIso();
+    const tomorrow = toTomorrowIso();
     return this._records()
-      .filter((r) => r.followUpDate && !r.followUpDone && r.followUpDate <= today)
+      .filter((r) => r.followUpDate && !r.followUpDone && r.followUpDate <= tomorrow)
       .sort((a, b) => (a.followUpDate as string) < (b.followUpDate as string) ? -1 : 1);
   });
 
-  // ids dos pets com retorno pendente — usado pro badge na linha do pet
-  readonly dueFollowUpPatientIds = computed(() => new Set(this.dueFollowUps().map((r) => r.patientId)));
+  // ids dos pets com retorno vencendo hoje ou atrasado (sem amanha) — usado pro badge
+  // na linha do pet, que deve sinalizar so o que precisa de acao agora
+  readonly dueFollowUpPatientIds = computed(() => {
+    const today = toTodayIso();
+    return new Set(
+      this._records()
+        .filter((r) => r.followUpDate && !r.followUpDone && r.followUpDate <= today)
+        .map((r) => r.patientId)
+    );
+  });
 
   // substitui a lista inteira — usado ao carregar os dados reais da API
   replaceAll(records: MedicalRecordResponseDTO[]): void {
