@@ -14,6 +14,8 @@ export class CareStateService {
   readonly complaint = signal('');
   readonly treatment = signal('');
   readonly weightSuggestionLabel = signal('');
+  // opcional — data (yyyy-MM-dd) pra lembrar de avisar o tutor apos o atendimento
+  readonly followUpDate = signal<string | null>(null);
 
   open(): void {
     this.isOpen.set(true);
@@ -22,6 +24,7 @@ export class CareStateService {
     this.complaint.set('');
     this.treatment.set('');
     this.weightSuggestionLabel.set('');
+    this.followUpDate.set(null);
   }
 
   close(): void {
@@ -31,6 +34,7 @@ export class CareStateService {
     this.complaint.set('');
     this.treatment.set('');
     this.weightSuggestionLabel.set('');
+    this.followUpDate.set(null);
   }
 
   // abre o atendimento pra um pet especifico, ja sugerindo o peso (do ultimo
@@ -58,6 +62,10 @@ export class CareStateService {
 
   setTreatment(value: string): void {
     this.treatment.set(value);
+  }
+
+  setFollowUpDate(value: string | null): void {
+    this.followUpDate.set(value || null);
   }
 
   complete(): void {

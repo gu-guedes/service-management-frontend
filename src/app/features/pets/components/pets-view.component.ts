@@ -44,7 +44,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <div class="pet-cell">
                   <span class="pet-avatar">{{ getPetEmoji(pet.species) }}</span>
                   <div>
-                    <p class="strong">{{ pet.name }}</p>
+                    <p class="strong">
+                      {{ pet.name }}
+                      <span *ngIf="pet.id !== null && dueFollowUpPatientIds.has(pet.id)" title="Retorno pendente">🔔</span>
+                    </p>
                     <p class="sub">{{ pet.summary }}</p>
                   </div>
                 </div>
@@ -76,6 +79,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class PetsViewComponent {
   @Input() filteredPetRecords: Array<{
+    id: number | null;
     name: string;
     species: 'dog' | 'cat' | 'other';
     summary: string;
@@ -88,6 +92,7 @@ export class PetsViewComponent {
 
   @Input() petFilters: Array<{ key: string; label: string }> = [];
   @Input() activePetFilter = 'all';
+  @Input() dueFollowUpPatientIds: Set<number> = new Set();
 
   @Output() petFilterChange = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();

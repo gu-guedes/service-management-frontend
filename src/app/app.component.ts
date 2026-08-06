@@ -9,6 +9,7 @@ import { PetsStateService } from './core/services/pets-state.service';
 import { TutorsStateService } from './core/services/tutors-state.service';
 import { DirectoryApiService, CustomerResponseDTO, PatientResponseDTO } from './core/services/directory-api.service';
 import { MedicalRecordsApiService } from './core/services/medical-records-api.service';
+import { MedicalRecordsStateService } from './core/services/medical-records-state.service';
 import { PetRecord } from './features/pets/models/pets.models';
 import { TutorRecord } from './features/tutors/models/tutors.models';
 import { PetDetailModalComponent } from './shared/components/pet-detail-modal.component';
@@ -59,6 +60,7 @@ export class AppComponent implements OnInit {
 
   readonly petsState = inject(PetsStateService);
   readonly tutorsState = inject(TutorsStateService);
+  private readonly medicalRecordsState = inject(MedicalRecordsStateService);
 
   // paginas de atendimento e cadastro sao tela cheia — sem sidebar/topbar/tabs
   private readonly currentUrl = toSignal(
@@ -95,6 +97,8 @@ export class AppComponent implements OnInit {
       next: ({ customers, patients, medicalRecords }) => {
         const customerNameById = new Map(customers.map((c) => [c.id, c.name]));
         const lastVisitByPatientId = this.toLastVisitMap(medicalRecords);
+
+        this.medicalRecordsState.replaceAll(medicalRecords);
 
         this.petsState.replaceAll(
           patients.map((patient) =>

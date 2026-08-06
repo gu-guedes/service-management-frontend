@@ -84,6 +84,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   (input)="onTreatmentInput($event)"
                 ></textarea>
               </label>
+              <label>
+                Lembrar de retorno em
+                <input type="date" [value]="followUpDate ?? ''" (input)="onFollowUpDateInput($event)" />
+                <span class="sub">Opcional — ex: avisar o tutor apos o fim de um tratamento.</span>
+              </label>
             </div>
             <button type="button" class="primary-btn" [disabled]="isCompletingVisit" (click)="complete.emit()">
               {{ isCompletingVisit ? 'Salvando...' : 'Salvar atendimento' }}
@@ -114,6 +119,7 @@ export class CareViewComponent {
   @Input() weightSuggestionLabel = '';
   @Input() complaint = '';
   @Input() treatment = '';
+  @Input() followUpDate: string | null = null;
   @Input() isCompletingVisit = false;
 
   @Output() close = new EventEmitter<void>();
@@ -122,6 +128,7 @@ export class CareViewComponent {
   @Output() weightKgChange = new EventEmitter<number | null>();
   @Output() complaintChange = new EventEmitter<string>();
   @Output() treatmentChange = new EventEmitter<string>();
+  @Output() followUpDateChange = new EventEmitter<string | null>();
 
   onWeightInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
@@ -134,5 +141,10 @@ export class CareViewComponent {
 
   onTreatmentInput(event: Event): void {
     this.treatmentChange.emit((event.target as HTMLTextAreaElement).value);
+  }
+
+  onFollowUpDateInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.followUpDateChange.emit(raw || null);
   }
 }

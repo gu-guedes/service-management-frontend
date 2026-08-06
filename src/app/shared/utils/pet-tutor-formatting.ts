@@ -61,6 +61,12 @@ export function isBirthdayToday(dateOnlyIso: string | null | undefined): boolean
   return monthDay === todayMonthDay;
 }
 
+// hoje, no formato yyyy-MM-dd — pra comparar com campos `date` (sem hora) por string
+export function toTodayIso(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
 export function toBrDateFromIso(iso: string | null | undefined): string {
   if (!iso) return '--/--/----';
 

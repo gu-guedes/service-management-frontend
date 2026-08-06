@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
+import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
   selector: 'app-visit-detail-view',
@@ -35,6 +36,23 @@ import { MedicalRecordResponseDTO } from '../../../core/services/medical-records
             <p class="label">Peso</p>
             <p class="strong">{{ record.weightKg }} kg</p>
           </div>
+
+          <div class="info-block" *ngIf="record.followUpDate">
+            <p class="label">Retorno</p>
+            <p class="strong">
+              {{ followUpDateLabel }}
+              <span *ngIf="record.followUpDone"> · feito</span>
+            </p>
+            <button
+              type="button"
+              class="ghost-btn"
+              *ngIf="!record.followUpDone"
+              [disabled]="isMarkingFollowUpDone"
+              (click)="markFollowUpDone.emit(record.id)"
+            >
+              {{ isMarkingFollowUpDone ? 'Salvando...' : 'Marcar como feito' }}
+            </button>
+          </div>
         </section>
 
         <p class="sub" *ngIf="!record">Atendimento nao encontrado.</p>
@@ -47,8 +65,14 @@ export class VisitDetailViewComponent {
   @Input() petName = '';
   @Input() petEmoji = '🐾';
   @Input() tutorName = '';
+  @Input() isMarkingFollowUpDone = false;
 
   @Output() close = new EventEmitter<void>();
+  @Output() markFollowUpDone = new EventEmitter<number>();
+
+  get followUpDateLabel(): string {
+    return toBrDateFromDateOnly(this.record?.followUpDate);
+  }
 
   get formattedDate(): string {
     if (!this.record) return '--/--/----';

@@ -4,6 +4,7 @@ import { PetsViewComponent } from '../components/pets-view.component';
 import { PetsStateService } from '../../../core/services/pets-state.service';
 import { ModalStateService } from '../../../core/services/modal-state.service';
 import { CareStateService } from '../../../core/services/care-state.service';
+import { MedicalRecordsStateService } from '../../../core/services/medical-records-state.service';
 
 @Component({
   selector: 'app-pets-page',
@@ -14,6 +15,7 @@ import { CareStateService } from '../../../core/services/care-state.service';
       [filteredPetRecords]="petsState.filtered()"
       [petFilters]="petsState.filters"
       [activePetFilter]="petsState.activeFilter()"
+      [dueFollowUpPatientIds]="medicalRecordsState.dueFollowUpPatientIds()"
       (petFilterChange)="petsState.setFilter($any($event))"
       (openPet)="modalState.openPetModal($event)"
       (startCare)="startCare($event)"
@@ -23,6 +25,7 @@ import { CareStateService } from '../../../core/services/care-state.service';
 export class PetsPageComponent {
   readonly petsState = inject(PetsStateService);
   readonly modalState = inject(ModalStateService);
+  readonly medicalRecordsState = inject(MedicalRecordsStateService);
   private readonly careState = inject(CareStateService);
   private readonly router = inject(Router);
 

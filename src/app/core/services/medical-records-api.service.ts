@@ -10,6 +10,9 @@ export interface MedicalRecordResponseDTO {
   complaint: string;
   treatment: string;
   weightKg: number | null;
+  // formato yyyy-MM-dd (sem hora) — opcional, so quando o vet quer lembrete de retorno
+  followUpDate: string | null;
+  followUpDone: boolean;
   createdAt: string;
 }
 
@@ -18,6 +21,8 @@ export interface MedicalRecordRequestDTO {
   complaint: string;
   treatment: string;
   weightKg?: number | null;
+  followUpDate?: string | null;
+  followUpDone?: boolean;
 }
 
 // -------------------------------------------------------------------
@@ -39,5 +44,9 @@ export class MedicalRecordsApiService {
 
   create(payload: MedicalRecordRequestDTO): Observable<MedicalRecordResponseDTO> {
     return this.http.post<MedicalRecordResponseDTO>('medical-records', payload);
+  }
+
+  update(id: number, payload: MedicalRecordRequestDTO): Observable<MedicalRecordResponseDTO> {
+    return this.http.put<MedicalRecordResponseDTO>(`medical-records/${id}`, payload);
   }
 }

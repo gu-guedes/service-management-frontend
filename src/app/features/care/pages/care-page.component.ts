@@ -8,6 +8,7 @@ import { CareStateService } from '../../../core/services/care-state.service';
 import { ModalStateService } from '../../../core/services/modal-state.service';
 import { PetsStateService } from '../../../core/services/pets-state.service';
 import { MedicalRecordsApiService } from '../../../core/services/medical-records-api.service';
+import { MedicalRecordsStateService } from '../../../core/services/medical-records-state.service';
 import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
@@ -26,11 +27,13 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [weightSuggestionLabel]="careState.weightSuggestionLabel()"
       [complaint]="careState.complaint()"
       [treatment]="careState.treatment()"
+      [followUpDate]="careState.followUpDate()"
       [isCompletingVisit]="isCompletingVisit()"
       (close)="close()"
       (weightKgChange)="careState.setWeightKg($event)"
       (complaintChange)="careState.setComplaint($event)"
       (treatmentChange)="careState.setTreatment($event)"
+      (followUpDateChange)="careState.setFollowUpDate($event)"
       (complete)="completeCareVisit()"
       (openVisit)="modalState.openVisitDetail($event)"
     />
@@ -41,7 +44,9 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [petName]="modalState.selectedPet()?.name || ''"
       [petEmoji]="modalState.selectedPetEmoji()"
       [tutorName]="modalState.selectedPet()?.tutor || ''"
+      [isMarkingFollowUpDone]="isMarkingFollowUpDone()"
       (close)="modalState.closeVisitDetail()"
+      (markFollowUpDone)="markFollowUpDone($event)"
     />
   `
 })
@@ -50,9 +55,11 @@ export class CarePageComponent {
   readonly modalState = inject(ModalStateService);
   private readonly petsState = inject(PetsStateService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
+  private readonly medicalRecordsState = inject(MedicalRecordsStateService);
   private readonly router = inject(Router);
 
   readonly isCompletingVisit = signal(false);
+  readonly isMarkingFollowUpDone = signal(false);
 
   close(): void {
     this.careState.close();
@@ -84,17 +91,45 @@ export class CarePageComponent {
           patientId: pet.id,
           complaint,
           treatment,
-          weightKg: this.careState.weightKg()
+          weightKg: this.careState.weightKg(),
+          followUpDate: this.careState.followUpDate()
         })
       );
 
       this.careState.complete();
       this.modalState.reloadSelectedPetVisits();
+      this.medicalRecordsState.addRecord(record);
       this.petsState.updateLastVisit(pet.id, toBrDateFromIso(record.recordDate));
     } catch {
       this.careState.setCompletionMessage('Nao foi possivel salvar o atendimento agora. Tente novamente.');
     } finally {
       this.isCompletingVisit.set(false);
+    }
+  }
+
+  // marca o lembrete de retorno de um atendimento como resolvido, sem reabrir o form de edicao completo
+  async markFollowUpDone(recordId: number): Promise<void> {
+    const record = this.modalState.selectedVisitRecord();
+    if (!record || record.id !== recordId) return;
+
+    this.isMarkingFollowUpDone.set(true);
+
+    try {
+      await firstValueFrom(
+        this.medicalRecordsApi.update(recordId, {
+          patientId: record.patientId,
+          complaint: record.complaint,
+          treatment: record.treatment,
+          weightKg: record.weightKg,
+          followUpDate: record.followUpDate,
+          followUpDone: true
+        })
+      );
+
+      this.medicalRecordsState.updateRecord(recordId, { followUpDone: true });
+      this.modalState.reloadSelectedPetVisits();
+    } finally {
+      this.isMarkingFollowUpDone.set(false);
     }
   }
 }
