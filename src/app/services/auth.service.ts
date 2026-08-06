@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap, catchError } from 'rxjs';
 import { throwError } from 'rxjs';
 
@@ -16,6 +17,7 @@ interface LoginResponseDTO {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly tokenStorageKey = 'accessToken';
 
   login(credentials: LoginRequestDTO): Observable<LoginResponseDTO> {
@@ -34,6 +36,15 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.tokenStorageKey);
+  }
+
+  // usado tanto pelo botao "Sair" quanto pelo interceptor de sessao expirada —
+  // so desloga de fato (e navega pro login) se a pessoa confirmar
+  async confirmAndLogout(message = 'Deseja realmente sair?'): Promise<void> {
+    if (!confirm(message)) return;
+
+    this.logout();
+    await this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {

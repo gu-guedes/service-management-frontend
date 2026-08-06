@@ -5,11 +5,12 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { apiBaseUrlInterceptor } from './core/interceptors/api-base-url.interceptor';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
+import { sessionExpiredInterceptor } from './core/interceptors/session-expired.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([apiBaseUrlInterceptor, authTokenInterceptor]))
+    provideHttpClient(withInterceptors([apiBaseUrlInterceptor, authTokenInterceptor, sessionExpiredInterceptor]))
   ]
 };

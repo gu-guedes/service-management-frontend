@@ -180,7 +180,6 @@ export class AppComponent implements OnInit {
   }
 
   async logout(): Promise<void> {
-    this.authService.logout();
-    await this.router.navigate(['/login']);
+    await this.authService.confirmAndLogout();
   }
 }
