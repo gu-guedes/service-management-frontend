@@ -57,6 +57,7 @@
 	border-radius: 0.6rem;
 	padding: 0.65rem 0.75rem;
 	text-align: left;
+	text-decoration: none;
 	cursor: pointer;
 	font-size: 0.88rem;
 }
@@ -114,7 +115,7 @@
 	gap: 1rem;
 }
 
-.main-content.registration-mode {
+.main-content.full-screen {
 	padding: 0;
 	gap: 0;
 	background: var(--bg);
@@ -134,6 +135,12 @@
 .topbar h1 {
 	font-family: 'Instrument Serif', serif;
 	font-size: 1.6rem;
+}
+
+.topbar-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
 }
 
 .topbar p {
@@ -166,17 +173,20 @@
 	border-bottom: 1px solid var(--border);
 }
 
-.tabs button {
+.tabs button,
+.tabs a {
 	border: 0;
 	background: transparent;
 	color: var(--muted);
 	padding: 0.55rem 0.95rem;
 	border-bottom: 2px solid transparent;
 	margin-bottom: -1px;
+	text-decoration: none;
 	cursor: pointer;
 }
 
-.tabs button.active {
+.tabs button.active,
+.tabs a.active {
 	border-bottom-color: var(--accent);
 	color: var(--accent);
 }
@@ -191,6 +201,14 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+}
+
+.pet-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	white-space: nowrap;
 }
 
 .tutors-view {
@@ -295,14 +313,35 @@
 	border: 1px solid var(--border);
 	background: transparent;
 	color: var(--text);
-	padding: 0.35rem 0.65rem;
-	border-radius: 0.55rem;
+	padding: 0.5rem 0.85rem;
+	border-radius: 0.6rem;
 	cursor: pointer;
-	font-size: 0.75rem;
+	font-size: 0.78rem;
+	font-weight: 500;
 }
 
 .ghost-btn:hover {
 	background: var(--bg);
+}
+
+/* dentro da sidebar escura (perfil), o texto precisa ser claro —
+   var(--text) sozinho ficaria invisivel (mesma cor do fundo da sidebar) */
+.profile .ghost-btn {
+	border-color: rgba(255, 255, 255, 0.3);
+	color: #fff;
+}
+
+.profile .ghost-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.ghost-btn.danger {
+	border-color: #dc2626;
+	color: #dc2626;
+}
+
+.ghost-btn.danger:hover {
+	background: #fef2f2;
 }
 
 .filters-bar {
@@ -594,11 +633,21 @@ tbody tr:hover {
 
 .timeline-item {
 	border: 1px solid var(--border);
+	background: var(--bg);
 	border-radius: 0.65rem;
 	padding: 0.6rem;
 	display: flex;
 	flex-direction: column;
 	gap: 0.2rem;
+	width: 100%;
+	min-width: 0;
+	text-align: left;
+	cursor: pointer;
+	overflow-wrap: anywhere;
+}
+
+.timeline-item:hover {
+	background: #ede9e3;
 }
 
 .info-grid {
@@ -732,6 +781,25 @@ tbody tr:hover {
 	background: #fff;
 }
 
+.wizard-form input.ng-invalid.ng-touched,
+.wizard-form select.ng-invalid.ng-touched,
+.wizard-form textarea.ng-invalid.ng-touched {
+	border-color: #dc2626;
+	background: #fef2f2;
+}
+
+.wizard-form input.ng-invalid.ng-touched:focus,
+.wizard-form select.ng-invalid.ng-touched:focus,
+.wizard-form textarea.ng-invalid.ng-touched:focus {
+	border-color: #dc2626;
+}
+
+.field-error {
+	font-size: 0.75rem;
+	color: #dc2626;
+	font-weight: 600;
+}
+
 .care-view {
 	min-height: 100vh;
 	display: flex;
@@ -748,6 +816,14 @@ tbody tr:hover {
 	color: #fff;
 }
 
+.care-topbar .reg-back {
+	margin-left: 0;
+}
+
+.care-topbar .reg-logo {
+	margin-left: auto;
+}
+
 .care-crumb {
 	font-size: 0.82rem;
 	color: rgba(255, 255, 255, 0.72);
@@ -756,7 +832,7 @@ tbody tr:hover {
 .care-body {
 	flex: 1;
 	display: grid;
-	grid-template-columns: 280px 1fr 260px;
+	grid-template-columns: 280px 1fr;
 	min-height: 0;
 }
 
@@ -833,6 +909,27 @@ tbody tr:hover {
 	gap: 0.1rem;
 	text-align: left;
 	cursor: pointer;
+	width: 100%;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.care-history-item .strong {
+	overflow-wrap: anywhere;
+}
+
+.care-history-item .sub {
+	overflow-wrap: anywhere;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.care-history-item .sub.care-history-time {
+	display: block;
+	-webkit-line-clamp: unset;
+	overflow: visible;
 }
 
 .care-history-item:hover {
@@ -842,6 +939,19 @@ tbody tr:hover {
 .care-right {
 	border-right: 0;
 	border-left: 1px solid var(--border);
+}
+
+.visit-detail-body {
+	flex: 1;
+	padding: 1.5rem;
+	display: flex;
+	justify-content: center;
+}
+
+.visit-detail-card {
+	width: 100%;
+	max-width: 640px;
+	height: fit-content;
 }
 
 .care-center {
@@ -1230,6 +1340,14 @@ tbody tr:hover {
 	padding: 0 1.8rem;
 	gap: 1rem;
 	flex-shrink: 0;
+}
+
+.reg-topbar .reg-back {
+	margin-left: 0;
+}
+
+.reg-topbar .reg-logo {
+	margin-left: auto;
 }
 
 .reg-logo {
