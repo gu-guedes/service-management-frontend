@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
+import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
   selector: 'app-pets-view',
@@ -7,6 +9,33 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   imports: [CommonModule],
   template: `
     <section class="pets-view">
+      <article class="card due-followups-card" *ngIf="dueFollowUps.length">
+        <header class="card-header pets-header">
+          <div>
+            <h3>🔔 Retornos de hoje</h3>
+            <p>{{ dueFollowUps.length }} {{ dueFollowUps.length === 1 ? 'lembrete pendente' : 'lembretes pendentes' }}</p>
+          </div>
+        </header>
+
+        <div class="due-followups-list">
+          <div class="due-followup-item" *ngFor="let record of dueFollowUps">
+            <div>
+              <p class="strong">{{ record.patientName }}</p>
+              <p class="sub">{{ record.treatment }}</p>
+              <p class="sub">Retorno: {{ formatFollowUpDate(record.followUpDate) }}</p>
+            </div>
+            <button
+              type="button"
+              class="ghost-btn"
+              [disabled]="markingFollowUpDoneIds.has(record.id)"
+              (click)="markFollowUpDone.emit(record.id)"
+            >
+              {{ markingFollowUpDoneIds.has(record.id) ? 'Salvando...' : 'Marcar como feito' }}
+            </button>
+          </div>
+        </div>
+      </article>
+
       <article class="card">
         <header class="card-header pets-header">
           <div>
@@ -93,10 +122,17 @@ export class PetsViewComponent {
   @Input() petFilters: Array<{ key: string; label: string }> = [];
   @Input() activePetFilter = 'all';
   @Input() dueFollowUpPatientIds: Set<number> = new Set();
+  @Input() dueFollowUps: MedicalRecordResponseDTO[] = [];
+  @Input() markingFollowUpDoneIds: Set<number> = new Set();
 
   @Output() petFilterChange = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
   @Output() startCare = new EventEmitter<string>();
+  @Output() markFollowUpDone = new EventEmitter<number>();
+
+  formatFollowUpDate(dateOnlyIso: string | null): string {
+    return toBrDateFromDateOnly(dateOnlyIso);
+  }
 
   getPetEmoji(species: 'dog' | 'cat' | 'other'): string {
     if (species === 'dog') {

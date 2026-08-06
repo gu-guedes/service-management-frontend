@@ -377,6 +377,29 @@
 	color: #fff;
 }
 
+.due-followups-card .card-header {
+	background: #fff7ed;
+	border-bottom-color: #fdba74;
+}
+
+.due-followups-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.due-followup-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.75rem 1rem;
+	border-top: 1px solid var(--border);
+}
+
+.due-followup-item:first-child {
+	border-top: none;
+}
+
 .pet-cell {
 	display: flex;
 	align-items: center;

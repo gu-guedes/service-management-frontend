@@ -14,15 +14,17 @@ export class MedicalRecordsStateService {
 
   readonly records = this._records.asReadonly();
 
-  // ids dos pets com retorno vencendo hoje ou atrasado, ainda nao marcado como feito
-  readonly dueFollowUpPatientIds = computed(() => {
+  // atendimentos com retorno vencendo hoje ou atrasado, ainda nao marcado como feito —
+  // usado pra mostrar o painel "Retornos de hoje" sem precisar abrir o prontuario
+  readonly dueFollowUps = computed(() => {
     const today = toTodayIso();
-    return new Set(
-      this._records()
-        .filter((r) => r.followUpDate && !r.followUpDone && r.followUpDate <= today)
-        .map((r) => r.patientId)
-    );
+    return this._records()
+      .filter((r) => r.followUpDate && !r.followUpDone && r.followUpDate <= today)
+      .sort((a, b) => (a.followUpDate as string) < (b.followUpDate as string) ? -1 : 1);
   });
+
+  // ids dos pets com retorno pendente — usado pro badge na linha do pet
+  readonly dueFollowUpPatientIds = computed(() => new Set(this.dueFollowUps().map((r) => r.patientId)));
 
   // substitui a lista inteira — usado ao carregar os dados reais da API
   replaceAll(records: MedicalRecordResponseDTO[]): void {
