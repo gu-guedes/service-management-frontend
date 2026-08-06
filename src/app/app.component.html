@@ -1,21 +1,20 @@
-<div class="layout-shell" [class.single-column]="registrationOpen || careOpen">
-  <aside class="sidebar" *ngIf="!registrationOpen && !careOpen">
+<div class="layout-shell" [class.single-column]="isFullScreenRoute()">
+  <aside class="sidebar" *ngIf="!isFullScreenRoute()">
     <header class="brand">
       <p class="brand-title">VetCare</p>
       <p class="brand-subtitle">Gestao Clinica</p>
     </header>
 
     <nav class="main-nav" aria-label="Navegacao principal">
-      <button
+      <a
         *ngFor="let item of navItems"
+        [routerLink]="item.route"
+        routerLinkActive="active"
         class="nav-item"
-        [class.active]="isNavItemActive(item.label)"
-        type="button"
       >
         <span>{{ item.icon }}</span>
         <span>{{ item.label }}</span>
-        <span *ngIf="item.badge" class="nav-badge">{{ item.badge }}</span>
-      </button>
+      </a>
     </nav>
 
     <footer class="profile">
@@ -28,272 +27,30 @@
     </footer>
   </aside>
 
-  <main class="main-content" [class.registration-mode]="registrationOpen">
-    <ng-container *ngIf="!registrationOpen && !careOpen">
-    <header class="topbar">
-      <div>
-        <h1>Painel Geral</h1>
-        <p>Seg, 23 Fev · 6 consultas</p>
-      </div>
-
-      <label class="search-box" aria-label="Busca rapida">
-        <span>🔍</span>
-        <input type="search" placeholder="Buscar pet, tutor ou prontuario" />
-      </label>
-      <button type="button" class="ghost-btn" (click)="openNewTutorInfoModal()">+ Tutor</button>
-      <button type="button" class="primary-btn" (click)="openNewPetChoiceModal()">Novo Pet</button>
-    </header>
-
-    <section class="tabs" aria-label="Secoes principais">
-      <button
-        type="button"
-        [class.active]="activeTab === 'dashboard'"
-        (click)="setTab('dashboard')"
-      >
-        Visao Geral
-      </button>
-      <button
-        type="button"
-        [class.active]="activeTab === 'pets'"
-        (click)="setTab('pets')"
-      >
-        Fichas de Pets
-      </button>
-      <button
-        type="button"
-        [class.active]="activeTab === 'tutors'"
-        (click)="setTab('tutors')"
-      >
-        Tutores
-      </button>
-    </section>
-
-    <app-dashboard-view
-      *ngIf="activeTab === 'dashboard'"
-      [statItems]="statItems"
-      [appointments]="appointments"
-      [vaccineAlerts]="vaccineAlerts"
-      (newPet)="openNewPetChoiceModal()"
-      (newTutor)="openNewTutorInfoModal()"
-    />
-
-    <app-pets-view
-      *ngIf="activeTab === 'pets'"
-      [filteredPetRecords]="filteredPetRecords"
-      [petFilters]="petFilters"
-      [activePetFilter]="activePetFilter"
-      (petFilterChange)="setPetFilter($any($event))"
-      (newPet)="openNewPetChoiceModal()"
-      (openPet)="openPetModal($event)"
-    />
-
-    <app-tutors-view
-      *ngIf="activeTab === 'tutors'"
-      [tutorRecords]="tutorRecords"
-      [expandedTutorId]="expandedTutorId"
-      (newTutor)="openNewTutorInfoModal()"
-      (toggleTutor)="toggleTutorRow($event)"
-      (openTutor)="openTutorModal($event)"
-      (openPet)="openPetModal($event)"
-      (addPet)="openRegistration('addpet')"
-    />
-
-    <section *ngIf="activeModal === 'pet' && selectedPetRecord" class="modal-overlay" (click)="closeModal()">
-      <article class="modal-card" (click)="$event.stopPropagation()">
-        <header class="modal-header">
-          <div>
-            <h3>Ficha do Pet</h3>
-            <p>Prontuario e historico de atendimentos</p>
-          </div>
-          <button type="button" class="modal-close" (click)="closeModal()">X</button>
-        </header>
-
-        <div class="modal-body">
-          <div class="pet-highlight">
-            <span class="pet-avatar large">{{ getPetEmoji(selectedPetRecord.species) }}</span>
-            <div>
-              <p class="pet-title">{{ selectedPetRecord.name }}</p>
-              <p class="sub">{{ selectedPetRecord.summary }}</p>
-            </div>
-            <span class="badge" [ngClass]="selectedPetRecord.statusClass">{{ selectedPetRecord.status }}</span>
-            <button type="button" class="primary-btn" (click)="openCareViewFromPet()">+ Atendimento</button>
-          </div>
-
-          <div class="info-block">
-            <p class="label">Tutor</p>
-            <div class="pet-cell between">
-              <div class="pet-cell">
-                <span class="tutor-avatar">{{ selectedPetRecord.tutorInitials }}</span>
-                <p class="strong">{{ selectedPetRecord.tutor }}</p>
-              </div>
-              <button type="button" class="link-btn" (click)="openTutorFromPet()">Ver perfil</button>
-            </div>
-          </div>
-
-          <div class="info-block">
-            <p class="label">Historico recente</p>
-            <div class="timeline" *ngIf="selectedPetTimeline.length; else noHistory">
-              <article class="timeline-item" *ngFor="let item of selectedPetTimeline">
-                <p class="sub">{{ item.date }}</p>
-                <p class="strong">{{ item.title }}</p>
-                <p class="sub">{{ item.description }}</p>
-              </article>
-            </div>
-            <ng-template #noHistory>
-              <p class="sub">Sem historico registrado para este pet.</p>
-            </ng-template>
-          </div>
+  <main class="main-content" [class.full-screen]="isFullScreenRoute()">
+    <ng-container *ngIf="!isFullScreenRoute()">
+      <header class="topbar">
+        <div>
+          <h1>VetCare</h1>
         </div>
-      </article>
-    </section>
 
-    <section *ngIf="activeModal === 'tutor' && selectedTutorRecord" class="modal-overlay" (click)="closeModal()">
-      <article class="modal-card" (click)="$event.stopPropagation()">
-        <header class="modal-header">
-          <div>
-            <h3>Perfil do Tutor</h3>
-            <p>Dados e pets vinculados</p>
-          </div>
-          <button type="button" class="modal-close" (click)="closeModal()">X</button>
-        </header>
-
-        <div class="modal-body">
-          <div class="info-grid">
-            <div>
-              <p class="label">Nome</p>
-              <p class="strong">{{ selectedTutorRecord.name }}</p>
-            </div>
-            <div>
-              <p class="label">CPF</p>
-              <p class="strong">{{ selectedTutorRecord.cpf }}</p>
-            </div>
-            <div>
-              <p class="label">Contato</p>
-              <p class="strong">{{ selectedTutorRecord.phone }}</p>
-            </div>
-            <div>
-              <p class="label">Ultima visita</p>
-              <p class="strong">{{ selectedTutorRecord.lastVisit }}</p>
-            </div>
-          </div>
-
-          <div class="info-block">
-            <p class="label">Pets de {{ selectedTutorRecord.name }}</p>
-            <div class="pets-inline compact">
-              <button
-                type="button"
-                class="pet-chip"
-                *ngFor="let pet of selectedTutorRecord.pets"
-                (click)="openPetModal(pet.name)"
-              >
-                <span>{{ pet.icon }}</span>
-                <span class="strong">{{ pet.name }}</span>
-                <span class="sub">{{ pet.details }}</span>
-              </button>
-            </div>
-          </div>
+        <div class="topbar-actions">
+          <button type="button" class="primary-btn" (click)="quickModal.openTutorInfo()">Novo Tutor</button>
+          <button type="button" class="primary-btn" (click)="quickModal.openPetChoice()">Novo Pet</button>
         </div>
-      </article>
-    </section>
+      </header>
 
-    <section *ngIf="newPetChoiceModalOpen" class="modal-overlay" (click)="closeQuickRegistrationModals()">
-      <article class="modal-card quick-modal" (click)="$event.stopPropagation()">
-        <header class="modal-header">
-          <div>
-            <h3>Adicionar Pet</h3>
-            <p>Escolha o caminho de cadastro</p>
-          </div>
-          <button type="button" class="modal-close" (click)="closeQuickRegistrationModals()">X</button>
-        </header>
-        <div class="modal-body">
-          <button type="button" class="choice-card" (click)="startRegistrationFromModal('new')">
-            <span class="choice-icon">🧑‍⚕️</span>
-            <span>
-              <strong>Cliente novo</strong>
-              <small>Cadastrar tutor e primeiro pet juntos</small>
-            </span>
-            <span class="choice-arrow">→</span>
-          </button>
-          <button type="button" class="choice-card" (click)="startRegistrationFromModal('addpet')">
-            <span class="choice-icon">🐾</span>
-            <span>
-              <strong>Cliente ja cadastrado</strong>
-              <small>Buscar tutor e adicionar novo pet</small>
-            </span>
-            <span class="choice-arrow">→</span>
-          </button>
-        </div>
-      </article>
-    </section>
-
-    <section *ngIf="newTutorInfoModalOpen" class="modal-overlay" (click)="closeQuickRegistrationModals()">
-      <article class="modal-card quick-modal" (click)="$event.stopPropagation()">
-        <header class="modal-header">
-          <div>
-            <h3>Novo Tutor</h3>
-            <p>Cadastro completo em etapas com pelo menos 1 pet</p>
-          </div>
-          <button type="button" class="modal-close" (click)="closeQuickRegistrationModals()">X</button>
-        </header>
-        <div class="modal-body">
-          <div class="info-block">
-            <p class="sub">O cadastro completo inclui dados do tutor e vinculacao do primeiro pet.</p>
-          </div>
-        </div>
-        <footer class="wizard-actions">
-          <button type="button" class="ghost-btn" (click)="closeQuickRegistrationModals()">Cancelar</button>
-          <button type="button" class="primary-btn" (click)="startRegistrationFromModal('new')">Abrir formulario</button>
-        </footer>
-      </article>
-    </section>
-
+      <section class="tabs" aria-label="Secoes principais">
+        <a routerLink="/app/pets" routerLinkActive="active">Fichas de Pets</a>
+        <a routerLink="/app/tutors" routerLinkActive="active">Tutores</a>
+      </section>
     </ng-container>
 
-    <app-registration-view
-      *ngIf="registrationOpen"
-      [registrationScenario]="registrationScenario"
-      [registrationStep]="registrationStep"
-      [tutorForm]="tutorForm"
-      [findTutorForm]="findTutorForm"
-      [petForm]="petForm"
-      [tutorRecords]="tutorRecords"
-      [selectedTutorForRegistration]="selectedTutorForRegistration"
-      [registrationError]="registrationError"
-      [isSubmittingRegistration]="isSubmittingRegistration"
-      (close)="closeRegistration()"
-      (scenarioChange)="setRegistrationScenario($event)"
-      (selectTutor)="findTutorForm.controls.tutorId.setValue($event)"
-      (previous)="previousRegistrationStep()"
-      (next)="nextRegistrationStep()"
-      (submit)="submitRegistration()"
-    />
-
-    <app-care-view
-      *ngIf="careOpen"
-      [selectedPetRecord]="selectedPetRecord"
-      [selectedTutorRecord]="selectedTutorRecord"
-      [selectedPetCareProfile]="selectedPetCareProfile"
-      [selectedPetTimeline]="selectedPetTimeline"
-      [selectedPetEmoji]="selectedPetRecord ? getPetEmoji(selectedPetRecord.species) : '🐾'"
-      [careSections]="careSections"
-      [activeCareSection]="activeCareSection"
-      [medications]="medications"
-      [tests]="tests"
-      [procedures]="procedures"
-      [returnForm]="returnForm"
-      [careCompletionMessage]="careCompletionMessage"
-      [getCareSectionState]="careSectionState"
-      (close)="closeCareView()"
-      (sectionChange)="setCareSection($any($event))"
-      (addMedication)="addMedication()"
-      (removeMedication)="removeMedication($event)"
-      (addTest)="addTest()"
-      (removeTest)="removeTest($event)"
-      (setTestUrgency)="setTestUrgency($event.index, $event.urgency)"
-      (addProcedure)="addProcedure()"
-      (removeProcedure)="removeProcedure($event)"
-      (toggleProcedure)="toggleProcedure($event)"
-      (complete)="completeCare()"
-    />
+    <router-outlet />
   </main>
 </div>
+
+<!-- Modais compartilhados — montados uma vez, abertos de qualquer pagina via ModalStateService -->
+<app-pet-detail-modal />
+<app-tutor-detail-modal />
+<app-quick-registration-modal #quickModal />
