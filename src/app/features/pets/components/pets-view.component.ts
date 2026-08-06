@@ -13,7 +13,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             <h3>Fichas de Pets</h3>
             <p>{{ filteredPetRecords.length }} resultados exibidos</p>
           </div>
-          <button type="button" class="primary-btn" (click)="newPet.emit()">Novo Pet</button>
         </header>
 
         <div class="filters-bar">
@@ -60,9 +59,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
               <td>
                 <span class="badge" [ngClass]="pet.statusClass">{{ pet.status }}</span>
               </td>
-              <td>
+              <td class="pet-actions">
                 <button type="button" class="ghost-btn" (click)="openPet.emit(pet.name)">
                   Ver ficha
+                </button>
+                <button type="button" class="primary-btn" (click)="startCare.emit(pet.name)">
+                  + Atendimento
                 </button>
               </td>
             </tr>
@@ -88,8 +90,8 @@ export class PetsViewComponent {
   @Input() activePetFilter = 'all';
 
   @Output() petFilterChange = new EventEmitter<string>();
-  @Output() newPet = new EventEmitter<void>();
   @Output() openPet = new EventEmitter<string>();
+  @Output() startCare = new EventEmitter<string>();
 
   getPetEmoji(species: 'dog' | 'cat' | 'other'): string {
     if (species === 'dog') {

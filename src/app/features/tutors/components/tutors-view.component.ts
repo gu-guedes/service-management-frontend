@@ -13,7 +13,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             <h3>Tutores / Clientes</h3>
             <p>{{ tutorRecords.length }} tutores cadastrados</p>
           </div>
-          <button type="button" class="primary-btn" (click)="newTutor.emit()">Novo Tutor</button>
         </header>
 
         <table>
@@ -34,7 +33,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                     <span class="tutor-avatar">{{ tutor.initials }}</span>
                     <div>
                       <p class="strong">{{ tutor.name }}</p>
-                      <p class="sub">CPF {{ tutor.cpf }}</p>
                     </div>
                   </div>
                 </td>
@@ -80,7 +78,6 @@ export class TutorsViewComponent {
   @Input() tutorRecords: Array<{
     id: string;
     name: string;
-    cpf: string;
     phone: string;
     initials: string;
     lastVisit: string;
@@ -89,7 +86,6 @@ export class TutorsViewComponent {
 
   @Input() expandedTutorId: string | null = null;
 
-  @Output() newTutor = new EventEmitter<void>();
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
