@@ -9,8 +9,8 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   template: `
     <section class="reg-view">
       <header class="reg-topbar">
-        <p class="reg-logo">VetCare</p>
         <button type="button" class="reg-back" (click)="close.emit()">← Voltar ao sistema</button>
+        <p class="reg-logo">VetCare</p>
       </header>
 
       <div class="reg-scenario-bar">
@@ -53,35 +53,61 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             <h4>Quem e o <em>tutor</em>?</h4>
             <p class="step-hint">Dados do cliente responsavel. Cadastrado uma vez e vinculado aos pets depois.</p>
             <p class="fsec-title">Identificacao</p>
-            <div class="grid-2-col">
-              <label>
-                Nome completo <span class="req">*</span>
-                <input type="text" formControlName="fullName" placeholder="Ex: Carlos Eduardo Mendes" />
-              </label>
-              <label>
-                CPF <span class="req">*</span>
-                <input type="text" formControlName="cpf" placeholder="000.000.000-00" />
-              </label>
-            </div>
-            <p class="fsec-title">Contato</p>
-            <div class="grid-2-col">
-              <label>
-                WhatsApp / Telefone <span class="req">*</span>
-                <input type="text" formControlName="phone" placeholder="(11) 99999-9999" />
-              </label>
-              <label>
-                E-mail
-                <input type="email" formControlName="email" placeholder="email@dominio.com" />
-              </label>
-            </div>
-            <p class="fsec-title">Endereco</p>
             <label>
-              Endereco
-              <input type="text" formControlName="address" placeholder="Rua, numero e bairro" />
+              Nome completo <span class="req">*</span>
+              <input type="text" formControlName="fullName" placeholder="Ex: Carlos Eduardo Mendes" />
+              <span class="field-error" *ngIf="tutorForm.controls['fullName'].invalid && tutorForm.controls['fullName'].touched">
+                Informe o nome completo (minimo 3 caracteres).
+              </span>
             </label>
+            <p class="fsec-title">Contato</p>
             <label>
-              Cidade
-              <input type="text" formControlName="city" placeholder="Ex: Sao Paulo, SP" />
+              WhatsApp / Telefone <span class="req">*</span>
+              <input
+                type="text"
+                formControlName="phone"
+                placeholder="(11) 99999-9999"
+                maxlength="15"
+                (input)="onPhoneInput($event)"
+              />
+              <span class="field-error" *ngIf="tutorForm.controls['phone'].invalid && tutorForm.controls['phone'].touched">
+                Use o formato (11) 99999-9999.
+              </span>
+            </label>
+            <p class="fsec-title">Endereco</p>
+            <div class="grid-2-col">
+              <label>
+                Rua <span class="req">*</span>
+                <input type="text" formControlName="street" placeholder="Ex: Rua das Flores" />
+                <span class="field-error" *ngIf="tutorForm.controls['street'].invalid && tutorForm.controls['street'].touched">
+                  Informe a rua.
+                </span>
+              </label>
+              <label>
+                Numero <span class="req">*</span>
+                <input type="text" formControlName="streetNumber" placeholder="Ex: 123" />
+                <span class="field-error" *ngIf="tutorForm.controls['streetNumber'].invalid && tutorForm.controls['streetNumber'].touched">
+                  Informe o numero.
+                </span>
+              </label>
+              <label>
+                Bairro <span class="req">*</span>
+                <input type="text" formControlName="neighborhood" placeholder="Ex: Centro" />
+                <span class="field-error" *ngIf="tutorForm.controls['neighborhood'].invalid && tutorForm.controls['neighborhood'].touched">
+                  Informe o bairro.
+                </span>
+              </label>
+              <label>
+                Cidade <span class="req">*</span>
+                <input type="text" formControlName="city" placeholder="Ex: Sao Paulo" />
+                <span class="field-error" *ngIf="tutorForm.controls['city'].invalid && tutorForm.controls['city'].touched">
+                  Informe a cidade.
+                </span>
+              </label>
+            </div>
+            <label>
+              Ponto de referencia
+              <input type="text" formControlName="referencePoint" placeholder="Opcional — Ex: proximo ao mercado" />
             </label>
           </form>
 
@@ -97,6 +123,9 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
                   {{ tutor.name }} · {{ tutor.phone }}
                 </option>
               </select>
+              <span class="field-error" *ngIf="findTutorForm.controls['tutorId'].invalid && findTutorForm.controls['tutorId'].touched">
+                Selecione um tutor para continuar.
+              </span>
             </label>
             <div class="search-results">
               <button
@@ -109,7 +138,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
                 <span class="tutor-avatar">{{ tutor.initials }}</span>
                 <span class="search-main">
                   <strong>{{ tutor.name }}</strong>
-                  <small>{{ tutor.phone }} · CPF {{ tutor.cpf }}</small>
+                  <small>{{ tutor.phone }}</small>
                 </span>
                 <span class="sub">{{ tutor.pets.length }} {{ tutor.pets.length === 1 ? 'pet' : 'pets' }}</span>
               </button>
@@ -125,6 +154,9 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
               <label>
                 Nome <span class="req">*</span>
                 <input type="text" formControlName="name" />
+                <span class="field-error" *ngIf="petForm.controls['name'].invalid && petForm.controls['name'].touched">
+                  Informe o nome do pet (minimo 2 caracteres).
+                </span>
               </label>
               <label>
                 Especie <span class="req">*</span>
@@ -138,25 +170,41 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             <p class="fsec-title">Detalhes</p>
             <div class="grid-2-col">
               <label>
-                Raca
+                Raca <span class="req">*</span>
                 <input type="text" formControlName="breed" />
+                <span class="field-error" *ngIf="petForm.controls['breed'].invalid && petForm.controls['breed'].touched">
+                  Informe a raca.
+                </span>
               </label>
               <label>
-                Sexo
+                Sexo <span class="req">*</span>
                 <select formControlName="sex">
                   <option value="M">Macho</option>
                   <option value="F">Femea</option>
                 </select>
               </label>
               <label>
-                Data de nascimento
-                <input type="date" formControlName="birthDate" />
+                Idade (anos) <span class="req">*</span>
+                <input type="number" formControlName="age" step="1" min="0" max="50" placeholder="Ex: 3" />
+                <span class="field-error" *ngIf="petForm.controls['age'].invalid && petForm.controls['age'].touched">
+                  Informe a idade (0 a 50 anos).
+                </span>
               </label>
               <label>
-                Peso (kg)
+                Peso (kg) <span class="req">*</span>
                 <input type="number" formControlName="weight" step="0.1" min="0.1" max="120" />
+                <span class="field-error" *ngIf="petForm.controls['weight'].invalid && petForm.controls['weight'].touched">
+                  Informe o peso (0.1 a 120 kg).
+                </span>
               </label>
             </div>
+            <label>
+              Observacoes <span class="req">*</span>
+              <textarea rows="3" formControlName="notes" placeholder="Ex: alergico a determinado medicamento"></textarea>
+              <span class="field-error" *ngIf="petForm.controls['notes'].invalid && petForm.controls['notes'].touched">
+                Informe uma observacao sobre o pet.
+              </span>
+            </label>
           </form>
 
           <section *ngIf="registrationStep === 3" class="review-panel">
@@ -167,6 +215,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
               <p class="label">Tutor</p>
               <p class="strong">{{ tutorForm.controls['fullName'].value }}</p>
               <p class="sub">{{ tutorForm.controls['phone'].value }}</p>
+              <p class="sub">{{ tutorAddressPreview }}</p>
             </div>
             <div class="info-block" *ngIf="registrationScenario === 'addpet' && selectedTutorForRegistration">
               <p class="label">Tutor selecionado</p>
@@ -175,14 +224,17 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             <div class="info-block">
               <p class="label">Pet</p>
               <p class="strong">{{ petForm.controls['name'].value }}</p>
-              <p class="sub">{{ petForm.controls['breed'].value || 'Sem raca' }}</p>
+              <p class="sub">{{ petSpeciesLabel }} · {{ petForm.controls['breed'].value || 'Sem raca' }} · {{ petSexLabel }}</p>
+              <p class="sub" *ngIf="petForm.controls['age'].value !== null">Idade: {{ petForm.controls['age'].value }} {{ petForm.controls['age'].value === 1 ? 'ano' : 'anos' }}</p>
+              <p class="sub" *ngIf="petForm.controls['weight'].value">Peso: {{ petForm.controls['weight'].value }} kg</p>
+              <p class="sub" *ngIf="petForm.controls['notes'].value">Obs: {{ petForm.controls['notes'].value }}</p>
             </div>
           </section>
 
           <p class="error-message" *ngIf="registrationError">{{ registrationError }}</p>
 
           <footer class="wizard-actions">
-            <p class="foot-note"><span class="req">*</span> Campos obrigatorios</p>
+            <p class="foot-note" *ngIf="registrationStep < 3"><span class="req">*</span> Campos obrigatorios</p>
             <button type="button" class="ghost-btn" (click)="close.emit()">Cancelar</button>
             <div class="wizard-actions-right">
               <button type="button" class="ghost-btn" *ngIf="registrationStep > 1" (click)="previous.emit()">Voltar</button>
@@ -203,7 +255,7 @@ export class RegistrationViewComponent {
   @Input() tutorForm!: FormGroup;
   @Input() findTutorForm!: FormGroup;
   @Input() petForm!: FormGroup;
-  @Input() tutorRecords: Array<{ id: string; name: string; cpf: string; phone: string; initials: string; pets: unknown[] }> = [];
+  @Input() tutorRecords: Array<{ id: string; name: string; phone: string; initials: string; pets: unknown[] }> = [];
   @Input() selectedTutorForRegistration: { name: string } | null = null;
   @Input() registrationError = '';
   @Input() isSubmittingRegistration = false;
@@ -214,4 +266,42 @@ export class RegistrationViewComponent {
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
   @Output() submit = new EventEmitter<void>();
+
+  // usados na revisao final (passo 3) — leem o valor atual dos forms
+  get tutorAddressPreview(): string {
+    const raw = this.tutorForm.getRawValue();
+    const main = [`${raw.street || ''}${raw.streetNumber ? ', ' + raw.streetNumber : ''}`, raw.neighborhood, raw.city]
+      .filter(Boolean)
+      .join(' - ');
+    const reference = raw.referencePoint ? ` (Ref.: ${raw.referencePoint})` : '';
+
+    return (main || 'Endereco nao informado') + reference;
+  }
+
+  get petSpeciesLabel(): string {
+    const species = this.petForm.controls['species'].value;
+    if (species === 'dog') return 'Cao';
+    if (species === 'cat') return 'Gato';
+    return 'Outro';
+  }
+
+  get petSexLabel(): string {
+    return this.petForm.controls['sex'].value === 'F' ? 'Femea' : 'Macho';
+  }
+
+  // máscara automática do telefone: sempre formata para (XX) XXXXX-XXXX
+  // enquanto o usuário digita, para nunca cair fora do padrão validado no form
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 11);
+    this.tutorForm.controls['phone'].setValue(this.formatPhone(digits));
+  }
+
+  private formatPhone(digits: string): string {
+    if (!digits) return '';
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  }
 }

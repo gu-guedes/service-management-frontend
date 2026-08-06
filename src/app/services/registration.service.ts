@@ -5,11 +5,12 @@ import { environment } from '../../environments/environment';
 
 interface TutorPayload {
   fullName: string;
-  cpf: string;
   phone: string;
-  email: string;
+  street: string;
+  streetNumber: string;
+  neighborhood: string;
   city: string;
-  address: string;
+  referencePoint: string;
 }
 
 interface PetPayload {
@@ -17,21 +18,30 @@ interface PetPayload {
   species: 'dog' | 'cat' | 'other';
   breed: string;
   sex: 'M' | 'F';
-  birthDate: string;
+  age: number | null;
   weight: number | null;
+  notes: string;
 }
 
 interface CustomerRequestDTO {
   name: string;
-  email: string;
   phone?: string;
+  street: string;
+  streetNumber: string;
+  neighborhood: string;
+  city: string;
+  referencePoint?: string;
 }
 
 interface CustomerResponseDTO {
   id: number;
   name: string;
-  email: string;
   phone: string;
+  street: string | null;
+  streetNumber: string | null;
+  neighborhood: string | null;
+  city: string | null;
+  referencePoint: string | null;
   createdAt: string;
 }
 
@@ -41,7 +51,7 @@ interface PatientRequestDTO {
   species: string;
   breed?: string;
   sex?: string;
-  birthDate?: string;
+  ageYears?: number;
   weightKg?: number;
   notes?: string;
 }
@@ -53,7 +63,7 @@ interface PatientResponseDTO {
   species: string;
   breed?: string;
   sex?: string;
-  birthDate?: string;
+  ageYears?: number;
   weightKg?: number;
   notes?: string;
 }
@@ -68,13 +78,19 @@ export class RegistrationService {
   }): Observable<{
     tutor: TutorPayload;
     pet: PetPayload;
+    customerId: number | null;
+    patientId: number | null;
     createdAt: string;
   }> {
     if (!environment.useMockApi) {
       const customerPayload: CustomerRequestDTO = {
         name: payload.tutor.fullName,
-        email: payload.tutor.email,
-        phone: this.toApiPhone(payload.tutor.phone)
+        phone: this.toApiPhone(payload.tutor.phone),
+        street: payload.tutor.street,
+        streetNumber: payload.tutor.streetNumber,
+        neighborhood: payload.tutor.neighborhood,
+        city: payload.tutor.city,
+        referencePoint: payload.tutor.referencePoint || undefined
       };
 
       return this.http.post<CustomerResponseDTO>('customers', customerPayload).pipe(
@@ -84,10 +100,10 @@ export class RegistrationService {
             name: payload.pet.name,
             species: payload.pet.species,
             breed: payload.pet.breed || undefined,
-            sex: payload.pet.sex,
-            birthDate: payload.pet.birthDate || undefined,
+            sex: this.toApiSex(payload.pet.sex),
+            ageYears: payload.pet.age ?? undefined,
             weightKg: payload.pet.weight ?? undefined,
-            notes: ''
+            notes: payload.pet.notes
           };
 
           return this.http.post<PatientResponseDTO>('patients', patientPayload).pipe(
@@ -99,9 +115,11 @@ export class RegistrationService {
                 species: this.toUiSpecies(patient.species),
                 breed: patient.breed ?? payload.pet.breed,
                 sex: this.toUiSex(patient.sex),
-                birthDate: patient.birthDate ?? payload.pet.birthDate,
+                age: patient.ageYears ?? payload.pet.age,
                 weight: patient.weightKg ?? payload.pet.weight
               },
+              customerId: customer.id,
+              patientId: patient.id,
               createdAt: this.toBrDate(customer.createdAt)
             }))
           );
@@ -112,6 +130,8 @@ export class RegistrationService {
     return of({
       tutor: payload.tutor,
       pet: payload.pet,
+      customerId: null,
+      patientId: null,
       createdAt: this.todayBr()
     }).pipe(delay(350));
   }
@@ -122,6 +142,7 @@ export class RegistrationService {
   }): Observable<{
     tutorId: string;
     pet: PetPayload;
+    patientId: number | null;
     createdAt: string;
   }> {
     if (!environment.useMockApi) {
@@ -136,10 +157,10 @@ export class RegistrationService {
         name: payload.pet.name,
         species: payload.pet.species,
         breed: payload.pet.breed || undefined,
-        sex: payload.pet.sex,
-        birthDate: payload.pet.birthDate || undefined,
+        sex: this.toApiSex(payload.pet.sex),
+        ageYears: payload.pet.age ?? undefined,
         weightKg: payload.pet.weight ?? undefined,
-        notes: ''
+        notes: payload.pet.notes
       };
 
       return this.http.post<PatientResponseDTO>('patients', patientPayload).pipe(
@@ -151,9 +172,10 @@ export class RegistrationService {
             species: this.toUiSpecies(patient.species),
             breed: patient.breed ?? payload.pet.breed,
             sex: this.toUiSex(patient.sex),
-            birthDate: patient.birthDate ?? payload.pet.birthDate,
+            age: patient.ageYears ?? payload.pet.age,
             weight: patient.weightKg ?? payload.pet.weight
           },
+          patientId: patient.id,
           createdAt: this.todayBr()
         }))
       );
@@ -162,6 +184,7 @@ export class RegistrationService {
     return of({
       tutorId: payload.tutorId,
       pet: payload.pet,
+      patientId: null,
       createdAt: this.todayBr()
     }).pipe(delay(300));
   }
@@ -219,5 +242,10 @@ export class RegistrationService {
 
   private toUiSex(sex: string | undefined): 'M' | 'F' {
     return String(sex || '').toUpperCase() === 'F' ? 'F' : 'M';
+  }
+
+  // o banco só aceita 'macho'/'femea' (constraint patients_sex_check)
+  private toApiSex(sex: 'M' | 'F'): string {
+    return sex === 'F' ? 'femea' : 'macho';
   }
 }
