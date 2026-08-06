@@ -7,16 +7,32 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   imports: [CommonModule],
   template: `
     <section class="tutors-view">
+      <article class="card due-followups-card" *ngIf="todayBirthdays.length">
+        <header class="card-header pets-header">
+          <div>
+            <h3>🎂 Aniversariantes de hoje</h3>
+            <p>{{ todayBirthdays.length }} {{ todayBirthdays.length === 1 ? 'tutor' : 'tutores' }}</p>
+          </div>
+        </header>
+
+        <div class="due-followups-list">
+          <div class="due-followup-item" *ngFor="let tutor of todayBirthdays">
+            <div>
+              <p class="strong">{{ tutor.name }}</p>
+              <p class="sub">{{ tutor.phone }}</p>
+            </div>
+            <button type="button" class="ghost-btn" (click)="openTutor.emit(tutor.id)">
+              Ver perfil
+            </button>
+          </div>
+        </div>
+      </article>
+
       <article class="card">
         <header class="card-header pets-header">
           <div>
             <h3>Tutores / Clientes</h3>
-            <p>
-              {{ tutorRecords.length }} tutores cadastrados
-              <span class="badge is-green" *ngIf="birthdayTodayIds.size > 0">
-                🎂 {{ birthdayTodayIds.size }} {{ birthdayTodayIds.size === 1 ? 'aniversariante' : 'aniversariantes' }} hoje
-              </span>
-            </p>
+            <p>{{ tutorRecords.length }} tutores cadastrados</p>
           </div>
         </header>
 
@@ -94,6 +110,7 @@ export class TutorsViewComponent {
 
   @Input() expandedTutorId: string | null = null;
   @Input() birthdayTodayIds: Set<string> = new Set();
+  @Input() todayBirthdays: Array<{ id: string; name: string; phone: string }> = [];
 
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
