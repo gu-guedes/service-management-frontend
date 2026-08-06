@@ -171,6 +171,7 @@ export class AppComponent implements OnInit {
       initials: toInitials(customer.name),
       lastVisit: lastVisitIso ? toBrDateFromIso(lastVisitIso) : 'Sem atendimentos',
       registeredAt: toBrDateFromIso(customer.createdAt),
+      birthDate: customer.birthDate,
       pets: pets.map((pet) => ({
         name: pet.name,
         details: `${pet.breed || 'Sem raca'} · ${toSexLabel(pet.sex)}`,

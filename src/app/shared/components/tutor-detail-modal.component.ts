@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ModalStateService } from '../../core/services/modal-state.service';
 import { TutorsStateService } from '../../core/services/tutors-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
-import { toAddressLabel } from '../utils/pet-tutor-formatting';
+import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatting';
 
 // -------------------------------------------------------------------
 // Perfil do tutor — modal compartilhado, montado uma vez no shell.
@@ -93,6 +93,13 @@ import { toAddressLabel } from '../utils/pet-tutor-formatting';
               Ponto de referencia
               <input type="text" formControlName="referencePoint" />
             </label>
+            <label>
+              Data de nascimento <span class="req">*</span>
+              <input type="date" formControlName="birthDate" />
+              <span class="field-error" *ngIf="editTutorForm.controls['birthDate'].invalid && editTutorForm.controls['birthDate'].touched">
+                Informe a data de nascimento.
+              </span>
+            </label>
             <footer class="wizard-actions">
               <button type="button" class="ghost-btn" (click)="cancelEditTutor()">Cancelar</button>
               <div class="wizard-actions-right">
@@ -124,6 +131,13 @@ import { toAddressLabel } from '../utils/pet-tutor-formatting';
               <div>
                 <p class="label">Ultima visita</p>
                 <p class="strong">{{ tutor.lastVisit }}</p>
+              </div>
+              <div>
+                <p class="label">Aniversario</p>
+                <p class="strong">
+                  {{ tutor.birthDate ? birthDateLabel(tutor.birthDate) : 'Nao informado' }}
+                  <span *ngIf="isBirthdayToday(tutor.id)"> 🎂 Hoje!</span>
+                </p>
               </div>
             </div>
 
@@ -165,13 +179,22 @@ export class TutorDetailModalComponent {
     streetNumber: ['', [Validators.required]],
     neighborhood: ['', [Validators.required, Validators.minLength(2)]],
     city: ['', [Validators.required, Validators.minLength(2)]],
-    referencePoint: ['']
+    referencePoint: [''],
+    birthDate: ['', Validators.required]
   });
 
   close(): void {
     this.modalState.close();
     this.editingTutor.set(false);
     this.editError.set('');
+  }
+
+  birthDateLabel(birthDate: string): string {
+    return toBrDateFromDateOnly(birthDate);
+  }
+
+  isBirthdayToday(tutorId: string): boolean {
+    return this.tutorsState.todayBirthdayIds().has(tutorId);
   }
 
   async startEditTutor(): Promise<void> {
@@ -189,7 +212,8 @@ export class TutorDetailModalComponent {
         streetNumber: customer.streetNumber ?? '',
         neighborhood: customer.neighborhood ?? '',
         city: customer.city ?? '',
-        referencePoint: customer.referencePoint ?? ''
+        referencePoint: customer.referencePoint ?? '',
+        birthDate: customer.birthDate ?? ''
       });
       this.editingTutor.set(true);
     } catch {
@@ -224,14 +248,16 @@ export class TutorDetailModalComponent {
           streetNumber: raw.streetNumber ?? '',
           neighborhood: raw.neighborhood ?? '',
           city: raw.city ?? '',
-          referencePoint: raw.referencePoint || undefined
+          referencePoint: raw.referencePoint || undefined,
+          birthDate: raw.birthDate ?? ''
         })
       );
 
       this.tutorsState.updateRecord(tutor.id, {
         name: updated.name,
         phone: updated.phone || '--',
-        address: toAddressLabel(updated)
+        address: toAddressLabel(updated),
+        birthDate: updated.birthDate
       });
 
       this.editingTutor.set(false);

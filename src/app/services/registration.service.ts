@@ -11,6 +11,7 @@ interface TutorPayload {
   neighborhood: string;
   city: string;
   referencePoint: string;
+  birthDate: string;
 }
 
 interface PetPayload {
@@ -31,6 +32,7 @@ interface CustomerRequestDTO {
   neighborhood: string;
   city: string;
   referencePoint?: string;
+  birthDate: string;
 }
 
 interface CustomerResponseDTO {
@@ -90,7 +92,8 @@ export class RegistrationService {
         streetNumber: payload.tutor.streetNumber,
         neighborhood: payload.tutor.neighborhood,
         city: payload.tutor.city,
-        referencePoint: payload.tutor.referencePoint || undefined
+        referencePoint: payload.tutor.referencePoint || undefined,
+        birthDate: payload.tutor.birthDate
       };
 
       return this.http.post<CustomerResponseDTO>('customers', customerPayload).pipe(

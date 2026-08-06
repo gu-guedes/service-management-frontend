@@ -54,7 +54,8 @@ export class RegistrationPageComponent implements OnInit {
     streetNumber: ['', [Validators.required]],
     neighborhood: ['', [Validators.required, Validators.minLength(2)]],
     city: ['', [Validators.required, Validators.minLength(2)]],
-    referencePoint: ['']
+    referencePoint: [''],
+    birthDate: ['', Validators.required]
   });
 
   readonly findTutorForm = this.fb.group({
@@ -78,7 +79,7 @@ export class RegistrationPageComponent implements OnInit {
     this.registrationStep.set(1);
     this.registrationError.set('');
 
-    this.tutorForm.reset({ fullName: '', phone: '', street: '', streetNumber: '', neighborhood: '', city: '', referencePoint: '' });
+    this.tutorForm.reset({ fullName: '', phone: '', street: '', streetNumber: '', neighborhood: '', city: '', referencePoint: '', birthDate: '' });
     this.petForm.reset({ name: '', species: 'dog', breed: '', sex: 'M', age: null, weight: null, notes: '' });
     this.findTutorForm.reset({ tutorId: '' });
   }
@@ -150,7 +151,8 @@ export class RegistrationPageComponent implements OnInit {
               streetNumber: tutorRaw.streetNumber ?? '',
               neighborhood: tutorRaw.neighborhood ?? '',
               city: tutorRaw.city ?? '',
-              referencePoint: tutorRaw.referencePoint ?? ''
+              referencePoint: tutorRaw.referencePoint ?? '',
+              birthDate: tutorRaw.birthDate ?? ''
             },
             pet: petPayload
           })
@@ -168,6 +170,7 @@ export class RegistrationPageComponent implements OnInit {
           initials: tutorInitials,
           lastVisit: 'Sem atendimentos',
           registeredAt: response.createdAt,
+          birthDate: response.tutor.birthDate || null,
           pets: [{
             name: response.pet.name,
             details: this.toPetDetails(petPayload),

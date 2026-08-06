@@ -74,6 +74,13 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
                 Use o formato (11) 99999-9999.
               </span>
             </label>
+            <label>
+              Data de nascimento <span class="req">*</span>
+              <input type="date" formControlName="birthDate" />
+              <span class="field-error" *ngIf="tutorForm.controls['birthDate'].invalid && tutorForm.controls['birthDate'].touched">
+                Informe a data de nascimento.
+              </span>
+            </label>
             <p class="fsec-title">Endereco</p>
             <div class="grid-2-col">
               <label>

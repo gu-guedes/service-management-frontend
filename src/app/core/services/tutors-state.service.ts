@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { TutorRecord } from '../../features/tutors/models/tutors.models';
+import { isBirthdayToday } from '../../shared/utils/pet-tutor-formatting';
 
 // -------------------------------------------------------------------
 // Serviço de estado dos tutores
@@ -12,6 +13,11 @@ export class TutorsStateService {
 
   readonly records = this._records.asReadonly();
   readonly expandedId = this._expandedId.asReadonly();
+
+  // ids dos tutores que fazem aniversario hoje — so filtra o que ja esta carregado, sem chamada de API nova
+  readonly todayBirthdayIds = computed(
+    () => new Set(this._records().filter((tutor) => isBirthdayToday(tutor.birthDate)).map((tutor) => tutor.id))
+  );
 
   // toggle: se clicou no mesmo tutor, fecha; se clicou em outro, abre aquele
   toggleExpanded(tutorId: string): void {

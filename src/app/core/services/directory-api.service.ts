@@ -12,6 +12,7 @@ export interface CustomerResponseDTO {
   neighborhood: string | null;
   city: string | null;
   referencePoint: string | null;
+  birthDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,6 +26,7 @@ export interface CustomerRequestDTO {
   neighborhood: string;
   city: string;
   referencePoint?: string;
+  birthDate: string;
 }
 
 export interface PatientResponseDTO {

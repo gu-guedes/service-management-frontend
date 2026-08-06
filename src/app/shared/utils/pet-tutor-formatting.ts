@@ -39,6 +39,28 @@ export function toAgeLabel(ageYears: number | null | undefined): string {
   return ageYears === 1 ? '1 ano' : `${ageYears} anos`;
 }
 
+// data-only (yyyy-MM-dd, sem hora) — usa split de string em vez de `new Date(iso)` porque
+// esse último interpreta como UTC-meia-noite, e no fuso do Brasil (UTC-3) isso volta um dia
+export function toBrDateFromDateOnly(dateOnlyIso: string | null | undefined): string {
+  if (!dateOnlyIso) return '--/--/----';
+
+  const [year, month, day] = dateOnlyIso.split('-');
+  if (!year || !month || !day) return '--/--/----';
+
+  return `${day}/${month}/${year}`;
+}
+
+// mesmo motivo do helper acima: compara mes/dia via string, sem passar por Date/fuso
+export function isBirthdayToday(dateOnlyIso: string | null | undefined): boolean {
+  if (!dateOnlyIso) return false;
+
+  const monthDay = dateOnlyIso.slice(5, 10);
+  const now = new Date();
+  const todayMonthDay = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  return monthDay === todayMonthDay;
+}
+
 export function toBrDateFromIso(iso: string | null | undefined): string {
   if (!iso) return '--/--/----';
 

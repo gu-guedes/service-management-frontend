@@ -11,7 +11,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
         <header class="card-header pets-header">
           <div>
             <h3>Tutores / Clientes</h3>
-            <p>{{ tutorRecords.length }} tutores cadastrados</p>
+            <p>
+              {{ tutorRecords.length }} tutores cadastrados
+              <span class="badge is-green" *ngIf="birthdayTodayIds.size > 0">
+                🎂 {{ birthdayTodayIds.size }} {{ birthdayTodayIds.size === 1 ? 'aniversariante' : 'aniversariantes' }} hoje
+              </span>
+            </p>
           </div>
         </header>
 
@@ -32,7 +37,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   <div class="pet-cell">
                     <span class="tutor-avatar">{{ tutor.initials }}</span>
                     <div>
-                      <p class="strong">{{ tutor.name }}</p>
+                      <p class="strong">
+                        {{ tutor.name }}
+                        <span *ngIf="birthdayTodayIds.has(tutor.id)" title="Aniversario hoje">🎂</span>
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -85,6 +93,7 @@ export class TutorsViewComponent {
   }> = [];
 
   @Input() expandedTutorId: string | null = null;
+  @Input() birthdayTodayIds: Set<string> = new Set();
 
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
