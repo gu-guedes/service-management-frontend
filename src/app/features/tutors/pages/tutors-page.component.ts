@@ -13,7 +13,6 @@ import { ModalStateService } from '../../../core/services/modal-state.service';
       [tutorRecords]="tutorsState.records()"
       [expandedTutorId]="tutorsState.expandedId()"
       [birthdayTodayIds]="tutorsState.todayBirthdayIds()"
-      [todayBirthdays]="tutorsState.todayBirthdays()"
       (toggleTutor)="tutorsState.toggleExpanded($event)"
       (openTutor)="modalState.openTutorModal($event)"
       (openPet)="modalState.openPetModal($event)"

@@ -87,6 +87,7 @@ export class AppComponent implements OnInit {
   });
 
   readonly navItems: NavItem[] = [
+    { label: 'Avisos', icon: '🔔', route: '/app/dashboard' },
     { label: 'Fichas de Pets', icon: '🐾', route: '/app/pets' },
     { label: 'Tutores', icon: '👥', route: '/app/tutors' }
   ];
