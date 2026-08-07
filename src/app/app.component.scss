@@ -409,14 +409,16 @@
 	color: #fff;
 }
 
-.due-panels-row {
-	display: flex;
+// grade de cards da pagina de Avisos — lado a lado em vez de empilhados,
+// cada card so tao alto quanto o proprio conteudo (align-items: start)
+.avisos-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
 	gap: 1rem;
-	align-items: stretch;
+	align-items: start;
 }
 
-.due-panels-row .due-followups-card {
-	flex: 1 1 0;
+.avisos-grid .due-followups-card {
 	min-width: 0;
 }
 
@@ -1738,14 +1740,8 @@ tbody tr:hover {
 		grid-template-columns: 1fr;
 	}
 
-	.due-panels-row {
-		flex-direction: column;
-	}
-
-	// em coluna, flex-basis:0 (herdado da regra de linha) faz o card colapsar quase a zero
-	// de altura em vez de crescer pro tamanho do conteudo — precisa virar auto aqui
-	.due-panels-row .due-followups-card {
-		flex: 1 1 auto;
+	.avisos-grid {
+		grid-template-columns: 1fr;
 	}
 
 	.due-followup-item {

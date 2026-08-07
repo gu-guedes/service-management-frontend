@@ -18,6 +18,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
     <section class="pets-view">
       <p class="sub" *ngIf="isEmpty">Nenhum aviso no momento — tudo em dia.</p>
 
+      <div class="avisos-grid">
       <article class="card due-followups-card" *ngIf="dueFollowUps.length">
         <header class="card-header pets-header">
           <div>
@@ -115,6 +116,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
           </div>
         </div>
       </article>
+      </div>
     </section>
   `
 })
