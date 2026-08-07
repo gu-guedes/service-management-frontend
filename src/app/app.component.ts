@@ -10,11 +10,14 @@ import { TutorsStateService } from './core/services/tutors-state.service';
 import { DirectoryApiService, CustomerResponseDTO, PatientResponseDTO } from './core/services/directory-api.service';
 import { MedicalRecordsApiService } from './core/services/medical-records-api.service';
 import { MedicalRecordsStateService } from './core/services/medical-records-state.service';
+import { ProductApplicationsApiService } from './core/services/product-applications-api.service';
+import { ProductApplicationsStateService } from './core/services/product-applications-state.service';
 import { PetRecord } from './features/pets/models/pets.models';
 import { TutorRecord } from './features/tutors/models/tutors.models';
 import { PetDetailModalComponent } from './shared/components/pet-detail-modal.component';
 import { TutorDetailModalComponent } from './shared/components/tutor-detail-modal.component';
 import { QuickRegistrationModalComponent } from './shared/components/quick-registration-modal.component';
+import { ProductApplicationModalComponent } from './shared/components/product-application-modal.component';
 import {
   toAddressLabel,
   toAgeLabel,
@@ -46,7 +49,8 @@ interface NavItem {
     RouterLinkActive,
     PetDetailModalComponent,
     TutorDetailModalComponent,
-    QuickRegistrationModalComponent
+    QuickRegistrationModalComponent,
+    ProductApplicationModalComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -57,10 +61,12 @@ export class AppComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly directoryApi = inject(DirectoryApiService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
+  private readonly productApplicationsApi = inject(ProductApplicationsApiService);
 
   readonly petsState = inject(PetsStateService);
   readonly tutorsState = inject(TutorsStateService);
   private readonly medicalRecordsState = inject(MedicalRecordsStateService);
+  private readonly productApplicationsState = inject(ProductApplicationsStateService);
 
   // paginas de atendimento e cadastro sao tela cheia — sem sidebar/topbar/tabs
   private readonly currentUrl = toSignal(
@@ -92,13 +98,15 @@ export class AppComponent implements OnInit {
     forkJoin({
       customers: this.directoryApi.getCustomers(),
       patients: this.directoryApi.getPatients(),
-      medicalRecords: this.medicalRecordsApi.getAll()
+      medicalRecords: this.medicalRecordsApi.getAll(),
+      productApplications: this.productApplicationsApi.getAll()
     }).subscribe({
-      next: ({ customers, patients, medicalRecords }) => {
+      next: ({ customers, patients, medicalRecords, productApplications }) => {
         const customerNameById = new Map(customers.map((c) => [c.id, c.name]));
         const lastVisitByPatientId = this.toLastVisitMap(medicalRecords);
 
         this.medicalRecordsState.replaceAll(medicalRecords);
+        this.productApplicationsState.replaceAll(productApplications);
 
         this.petsState.replaceAll(
           patients.map((patient) =>

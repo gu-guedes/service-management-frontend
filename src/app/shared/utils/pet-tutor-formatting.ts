@@ -74,8 +74,9 @@ export function toTomorrowIso(): string {
   return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 }
 
-// rotulo de urgencia de um retorno ja filtrado como "devido" (hoje, atrasado ou amanha)
-export function followUpUrgencyLabel(dateOnlyIso: string | null | undefined): 'Atrasado' | 'Hoje' | 'Amanha' | '' {
+// rotulo de urgencia de uma data ja filtrada como "devida" (hoje, atrasada ou amanha) —
+// usado tanto pelo retorno de atendimento quanto pela validade de produtos
+export function dateUrgencyLabel(dateOnlyIso: string | null | undefined): 'Atrasado' | 'Hoje' | 'Amanha' | '' {
   if (!dateOnlyIso) return '';
 
   const today = toTodayIso();

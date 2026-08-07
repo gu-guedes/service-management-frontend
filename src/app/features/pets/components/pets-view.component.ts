@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
-import { followUpUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
+import { ProductApplicationResponseDTO } from '../../../core/services/product-applications-api.service';
+import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
   selector: 'app-pets-view',
@@ -34,6 +35,31 @@ import { followUpUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/util
               (click)="markFollowUpDone.emit(record.id)"
             >
               {{ markingFollowUpDoneIds.has(record.id) ? 'Salvando...' : 'Marcar como feito' }}
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card due-followups-card" *ngIf="expiringProducts.length">
+        <header class="card-header pets-header">
+          <div>
+            <h3>🏷️ Produtos vencendo</h3>
+            <p>{{ expiringProducts.length }} {{ expiringProducts.length === 1 ? 'produto' : 'produtos' }} — hoje, atrasados ou amanha</p>
+          </div>
+        </header>
+
+        <div class="due-followups-list">
+          <div class="due-followup-item" *ngFor="let product of expiringProducts">
+            <div>
+              <p class="strong">
+                {{ product.patientName }}
+                <span class="badge" [ngClass]="urgencyBadgeClass(product.expiresAt)">{{ urgencyLabel(product.expiresAt) }}</span>
+              </p>
+              <p class="sub">{{ product.productName }}</p>
+              <p class="sub">Vence: {{ formatFollowUpDate(product.expiresAt) }}</p>
+            </div>
+            <button type="button" class="ghost-btn" (click)="addProduct.emit(product.patientName)">
+              Renovar
             </button>
           </div>
         </div>
@@ -79,6 +105,7 @@ import { followUpUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/util
                     <p class="strong">
                       {{ pet.name }}
                       <span *ngIf="pet.id !== null && dueFollowUpPatientIds.has(pet.id)" title="Retorno pendente">🔔</span>
+                      <span *ngIf="pet.id !== null && expiringProductPatientIds.has(pet.id)" title="Produto vencendo">🏷️</span>
                     </p>
                     <p class="sub">{{ pet.summary }}</p>
                   </div>
@@ -100,6 +127,9 @@ import { followUpUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/util
                 </button>
                 <button type="button" class="primary-btn" (click)="startCare.emit(pet.name)">
                   + Atendimento
+                </button>
+                <button type="button" class="ghost-btn" (click)="addProduct.emit(pet.name)">
+                  + Produto
                 </button>
               </td>
             </tr>
@@ -127,23 +157,26 @@ export class PetsViewComponent {
   @Input() dueFollowUpPatientIds: Set<number> = new Set();
   @Input() dueFollowUps: MedicalRecordResponseDTO[] = [];
   @Input() markingFollowUpDoneIds: Set<number> = new Set();
+  @Input() expiringProducts: ProductApplicationResponseDTO[] = [];
+  @Input() expiringProductPatientIds: Set<number> = new Set();
 
   @Output() petFilterChange = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
   @Output() startCare = new EventEmitter<string>();
   @Output() markFollowUpDone = new EventEmitter<number>();
+  @Output() addProduct = new EventEmitter<string>();
 
   formatFollowUpDate(dateOnlyIso: string | null): string {
     return toBrDateFromDateOnly(dateOnlyIso);
   }
 
   urgencyLabel(dateOnlyIso: string | null): string {
-    const label = followUpUrgencyLabel(dateOnlyIso);
+    const label = dateUrgencyLabel(dateOnlyIso);
     return label === 'Amanha' ? 'Amanhã' : label;
   }
 
   urgencyBadgeClass(dateOnlyIso: string | null): string {
-    const label = followUpUrgencyLabel(dateOnlyIso);
+    const label = dateUrgencyLabel(dateOnlyIso);
     if (label === 'Atrasado') return 'is-orange';
     if (label === 'Hoje') return 'is-green';
     return 'is-gray';

@@ -7,6 +7,8 @@ import { ModalStateService } from '../../../core/services/modal-state.service';
 import { CareStateService } from '../../../core/services/care-state.service';
 import { MedicalRecordsStateService } from '../../../core/services/medical-records-state.service';
 import { MedicalRecordsApiService } from '../../../core/services/medical-records-api.service';
+import { ProductApplicationsStateService } from '../../../core/services/product-applications-state.service';
+import { ProductApplicationModalStateService } from '../../../core/services/product-application-modal-state.service';
 
 @Component({
   selector: 'app-pets-page',
@@ -20,10 +22,13 @@ import { MedicalRecordsApiService } from '../../../core/services/medical-records
       [dueFollowUpPatientIds]="medicalRecordsState.dueFollowUpPatientIds()"
       [dueFollowUps]="medicalRecordsState.dueFollowUps()"
       [markingFollowUpDoneIds]="markingFollowUpDoneIds()"
+      [expiringProducts]="productApplicationsState.expiringProducts()"
+      [expiringProductPatientIds]="productApplicationsState.expiringProductPatientIds()"
       (petFilterChange)="petsState.setFilter($any($event))"
       (openPet)="modalState.openPetModal($event)"
       (startCare)="startCare($event)"
       (markFollowUpDone)="markFollowUpDone($event)"
+      (addProduct)="productApplicationModalState.open($event)"
     />
   `
 })
@@ -31,6 +36,8 @@ export class PetsPageComponent {
   readonly petsState = inject(PetsStateService);
   readonly modalState = inject(ModalStateService);
   readonly medicalRecordsState = inject(MedicalRecordsStateService);
+  readonly productApplicationsState = inject(ProductApplicationsStateService);
+  readonly productApplicationModalState = inject(ProductApplicationModalStateService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
   private readonly careState = inject(CareStateService);
   private readonly router = inject(Router);
