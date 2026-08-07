@@ -377,6 +377,17 @@
 	color: #fff;
 }
 
+.due-panels-row {
+	display: flex;
+	gap: 1rem;
+	align-items: stretch;
+}
+
+.due-panels-row .due-followups-card {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
 .due-followups-card .card-header {
 	background: #fff7ed;
 	border-bottom-color: #fdba74;
@@ -1644,6 +1655,10 @@ tbody tr:hover {
 
 	.quick-actions {
 		grid-template-columns: 1fr;
+	}
+
+	.due-panels-row {
+		flex-direction: column;
 	}
 
 	.pets-header {

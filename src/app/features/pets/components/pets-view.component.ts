@@ -10,60 +10,62 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
   imports: [CommonModule],
   template: `
     <section class="pets-view">
-      <article class="card due-followups-card" *ngIf="dueFollowUps.length">
-        <header class="card-header pets-header">
-          <div>
-            <h3>🔔 Retornos pendentes</h3>
-            <p>{{ dueFollowUps.length }} {{ dueFollowUps.length === 1 ? 'lembrete' : 'lembretes' }} — hoje, atrasados ou amanha</p>
-          </div>
-        </header>
-
-        <div class="due-followups-list">
-          <div class="due-followup-item" *ngFor="let record of dueFollowUps">
+      <div class="due-panels-row" *ngIf="dueFollowUps.length || expiringProducts.length">
+        <article class="card due-followups-card" *ngIf="dueFollowUps.length">
+          <header class="card-header pets-header">
             <div>
-              <p class="strong">
-                {{ record.patientName }}
-                <span class="badge" [ngClass]="urgencyBadgeClass(record.followUpDate)">{{ urgencyLabel(record.followUpDate) }}</span>
-              </p>
-              <p class="sub">{{ record.treatment }}</p>
-              <p class="sub">Retorno: {{ formatFollowUpDate(record.followUpDate) }}</p>
+              <h3>🔔 Retornos pendentes</h3>
+              <p>{{ dueFollowUps.length }} {{ dueFollowUps.length === 1 ? 'lembrete' : 'lembretes' }} — hoje, atrasados ou amanha</p>
             </div>
-            <button
-              type="button"
-              class="ghost-btn"
-              [disabled]="markingFollowUpDoneIds.has(record.id)"
-              (click)="markFollowUpDone.emit(record.id)"
-            >
-              {{ markingFollowUpDoneIds.has(record.id) ? 'Salvando...' : 'Marcar como feito' }}
-            </button>
-          </div>
-        </div>
-      </article>
+          </header>
 
-      <article class="card due-followups-card" *ngIf="expiringProducts.length">
-        <header class="card-header pets-header">
-          <div>
-            <h3>🏷️ Produtos vencendo</h3>
-            <p>{{ expiringProducts.length }} {{ expiringProducts.length === 1 ? 'produto' : 'produtos' }} — hoje, atrasados ou amanha</p>
+          <div class="due-followups-list">
+            <div class="due-followup-item" *ngFor="let record of dueFollowUps">
+              <div>
+                <p class="strong">
+                  {{ record.patientName }}
+                  <span class="badge" [ngClass]="urgencyBadgeClass(record.followUpDate)">{{ urgencyLabel(record.followUpDate) }}</span>
+                </p>
+                <p class="sub">{{ record.treatment }}</p>
+                <p class="sub">Retorno: {{ formatFollowUpDate(record.followUpDate) }}</p>
+              </div>
+              <button
+                type="button"
+                class="ghost-btn"
+                [disabled]="markingFollowUpDoneIds.has(record.id)"
+                (click)="markFollowUpDone.emit(record.id)"
+              >
+                {{ markingFollowUpDoneIds.has(record.id) ? 'Salvando...' : 'Marcar como feito' }}
+              </button>
+            </div>
           </div>
-        </header>
+        </article>
 
-        <div class="due-followups-list">
-          <div class="due-followup-item" *ngFor="let product of expiringProducts">
+        <article class="card due-followups-card" *ngIf="expiringProducts.length">
+          <header class="card-header pets-header">
             <div>
-              <p class="strong">
-                {{ product.patientName }}
-                <span class="badge" [ngClass]="urgencyBadgeClass(product.expiresAt)">{{ urgencyLabel(product.expiresAt) }}</span>
-              </p>
-              <p class="sub">{{ product.productName }}</p>
-              <p class="sub">Vence: {{ formatFollowUpDate(product.expiresAt) }}</p>
+              <h3>🏷️ Produtos vencendo</h3>
+              <p>{{ expiringProducts.length }} {{ expiringProducts.length === 1 ? 'produto' : 'produtos' }} — hoje, atrasados ou amanha</p>
             </div>
-            <button type="button" class="ghost-btn" (click)="addProduct.emit(product.patientName)">
-              Renovar
-            </button>
+          </header>
+
+          <div class="due-followups-list">
+            <div class="due-followup-item" *ngFor="let product of expiringProducts">
+              <div>
+                <p class="strong">
+                  {{ product.patientName }}
+                  <span class="badge" [ngClass]="urgencyBadgeClass(product.expiresAt)">{{ urgencyLabel(product.expiresAt) }}</span>
+                </p>
+                <p class="sub">{{ product.productName }}</p>
+                <p class="sub">Vence: {{ formatFollowUpDate(product.expiresAt) }}</p>
+              </div>
+              <button type="button" class="ghost-btn" (click)="addProduct.emit(product.patientName)">
+                Renovar
+              </button>
+            </div>
           </div>
-        </div>
-      </article>
+        </article>
+      </div>
 
       <article class="card">
         <header class="card-header pets-header">
