@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
-import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
+import { ExamRequestResponseDTO } from '../../../core/services/exam-requests-api.service';
+import { toBrDateFromDateOnly, toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
   selector: 'app-visit-detail-view',
@@ -53,6 +54,40 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
               {{ isMarkingFollowUpDone ? 'Salvando...' : 'Marcar como feito' }}
             </button>
           </div>
+
+          <div class="info-block" *ngIf="examRequests.length">
+            <p class="label">Exames</p>
+            <div class="due-followups-list">
+              <div class="due-followup-item" *ngFor="let exam of examRequests">
+                <div>
+                  <p class="strong">{{ exam.examName }}</p>
+                  <p class="sub">Solicitado em {{ formatExamDate(exam.requestedDate) }}</p>
+                  <p class="sub" *ngIf="exam.resultFileName">Resultado anexado em {{ formatUploadedAt(exam.resultUploadedAt) }}</p>
+                </div>
+
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  *ngIf="exam.resultFileName"
+                  (click)="downloadExamResult.emit(exam)"
+                >
+                  Baixar resultado
+                </button>
+
+                <div class="exam-input-row" *ngIf="!exam.resultFileName">
+                  <input type="file" accept="application/pdf" #resultInput />
+                  <button
+                    type="button"
+                    class="ghost-btn"
+                    [disabled]="uploadingExamIds.has(exam.id)"
+                    (click)="onUploadClick(exam.id, resultInput)"
+                  >
+                    {{ uploadingExamIds.has(exam.id) ? 'Enviando...' : 'Anexar resultado' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <p class="sub" *ngIf="!record">Atendimento nao encontrado.</p>
@@ -66,12 +101,33 @@ export class VisitDetailViewComponent {
   @Input() petEmoji = '🐾';
   @Input() tutorName = '';
   @Input() isMarkingFollowUpDone = false;
+  @Input() examRequests: ExamRequestResponseDTO[] = [];
+  @Input() uploadingExamIds: Set<number> = new Set();
 
   @Output() close = new EventEmitter<void>();
   @Output() markFollowUpDone = new EventEmitter<number>();
+  @Output() uploadExamResult = new EventEmitter<{ examId: number; file: File }>();
+  @Output() downloadExamResult = new EventEmitter<ExamRequestResponseDTO>();
 
   get followUpDateLabel(): string {
     return toBrDateFromDateOnly(this.record?.followUpDate);
+  }
+
+  formatExamDate(dateOnlyIso: string | null): string {
+    return toBrDateFromDateOnly(dateOnlyIso);
+  }
+
+  // resultUploadedAt e um timestamp completo (OffsetDateTime), nao date-only —
+  // toBrDateFromDateOnly quebraria (split('-') pega o offset de fuso tambem)
+  formatUploadedAt(iso: string | null): string {
+    return toBrDateFromIso(iso);
+  }
+
+  onUploadClick(examId: number, input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploadExamResult.emit({ examId, file });
+    input.value = '';
   }
 
   get formattedDate(): string {

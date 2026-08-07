@@ -9,6 +9,8 @@ import { MedicalRecordsStateService } from '../../../core/services/medical-recor
 import { MedicalRecordsApiService } from '../../../core/services/medical-records-api.service';
 import { ProductApplicationsStateService } from '../../../core/services/product-applications-state.service';
 import { ProductApplicationModalStateService } from '../../../core/services/product-application-modal-state.service';
+import { ExamRequestsStateService } from '../../../core/services/exam-requests-state.service';
+import { ExamRequestResponseDTO } from '../../../core/services/exam-requests-api.service';
 
 @Component({
   selector: 'app-pets-page',
@@ -24,11 +26,14 @@ import { ProductApplicationModalStateService } from '../../../core/services/prod
       [markingFollowUpDoneIds]="markingFollowUpDoneIds()"
       [expiringProducts]="productApplicationsState.expiringProducts()"
       [expiringProductPatientIds]="productApplicationsState.expiringProductPatientIds()"
+      [pendingExams]="examRequestsState.pendingExamRequests()"
+      [pendingExamPatientIds]="examRequestsState.pendingExamPatientIds()"
       (petFilterChange)="petsState.setFilter($any($event))"
       (openPet)="modalState.openPetModal($event)"
       (startCare)="startCare($event)"
       (markFollowUpDone)="markFollowUpDone($event)"
       (addProduct)="productApplicationModalState.open($event)"
+      (openExamVisit)="openExamVisit($event)"
     />
   `
 })
@@ -38,6 +43,7 @@ export class PetsPageComponent {
   readonly medicalRecordsState = inject(MedicalRecordsStateService);
   readonly productApplicationsState = inject(ProductApplicationsStateService);
   readonly productApplicationModalState = inject(ProductApplicationModalStateService);
+  readonly examRequestsState = inject(ExamRequestsStateService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
   private readonly careState = inject(CareStateService);
   private readonly router = inject(Router);
@@ -52,6 +58,18 @@ export class PetsPageComponent {
 
     const latestWeight = this.modalState.selectedPetLatestWeight();
     this.careState.startForPet(pet, latestWeight);
+    this.router.navigate(['/app/care']);
+  }
+
+  // abre o atendimento especifico de um exame pendente, direto do card da lista de Pets
+  async openExamVisit(exam: ExamRequestResponseDTO): Promise<void> {
+    const pet = this.petsState.findById(exam.patientId);
+    if (!pet) return;
+
+    await this.modalState.selectPet(pet.name);
+    const latestWeight = this.modalState.selectedPetLatestWeight();
+    this.careState.startForPet(pet, latestWeight);
+    this.modalState.openVisitDetail(exam.medicalRecordId);
     this.router.navigate(['/app/care']);
   }
 

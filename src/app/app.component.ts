@@ -12,6 +12,8 @@ import { MedicalRecordsApiService } from './core/services/medical-records-api.se
 import { MedicalRecordsStateService } from './core/services/medical-records-state.service';
 import { ProductApplicationsApiService } from './core/services/product-applications-api.service';
 import { ProductApplicationsStateService } from './core/services/product-applications-state.service';
+import { ExamRequestsApiService } from './core/services/exam-requests-api.service';
+import { ExamRequestsStateService } from './core/services/exam-requests-state.service';
 import { PetRecord } from './features/pets/models/pets.models';
 import { TutorRecord } from './features/tutors/models/tutors.models';
 import { PetDetailModalComponent } from './shared/components/pet-detail-modal.component';
@@ -62,11 +64,13 @@ export class AppComponent implements OnInit {
   private readonly directoryApi = inject(DirectoryApiService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
   private readonly productApplicationsApi = inject(ProductApplicationsApiService);
+  private readonly examRequestsApi = inject(ExamRequestsApiService);
 
   readonly petsState = inject(PetsStateService);
   readonly tutorsState = inject(TutorsStateService);
   private readonly medicalRecordsState = inject(MedicalRecordsStateService);
   private readonly productApplicationsState = inject(ProductApplicationsStateService);
+  private readonly examRequestsState = inject(ExamRequestsStateService);
 
   // paginas de atendimento e cadastro sao tela cheia — sem sidebar/topbar/tabs
   private readonly currentUrl = toSignal(
@@ -110,14 +114,16 @@ export class AppComponent implements OnInit {
       customers: this.directoryApi.getCustomers(),
       patients: this.directoryApi.getPatients(),
       medicalRecords: this.medicalRecordsApi.getAll(),
-      productApplications: this.productApplicationsApi.getAll()
+      productApplications: this.productApplicationsApi.getAll(),
+      examRequests: this.examRequestsApi.getAll()
     }).subscribe({
-      next: ({ customers, patients, medicalRecords, productApplications }) => {
+      next: ({ customers, patients, medicalRecords, productApplications, examRequests }) => {
         const customerNameById = new Map(customers.map((c) => [c.id, c.name]));
         const lastVisitByPatientId = this.toLastVisitMap(medicalRecords);
 
         this.medicalRecordsState.replaceAll(medicalRecords);
         this.productApplicationsState.replaceAll(productApplications);
+        this.examRequestsState.replaceAll(examRequests);
 
         this.petsState.replaceAll(
           patients.map((patient) =>

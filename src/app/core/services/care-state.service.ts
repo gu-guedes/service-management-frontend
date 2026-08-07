@@ -16,6 +16,9 @@ export class CareStateService {
   readonly weightSuggestionLabel = signal('');
   // opcional — data (yyyy-MM-dd) pra lembrar de avisar o tutor apos o atendimento
   readonly followUpDate = signal<string | null>(null);
+  // exames sendo adicionados nesse atendimento em andamento — so viram ExamRequest de
+  // verdade depois de salvar (precisam do id do atendimento, que ainda nao existe aqui)
+  readonly pendingExamNames = signal<string[]>([]);
 
   open(): void {
     this.isOpen.set(true);
@@ -25,6 +28,7 @@ export class CareStateService {
     this.treatment.set('');
     this.weightSuggestionLabel.set('');
     this.followUpDate.set(null);
+    this.pendingExamNames.set([]);
   }
 
   close(): void {
@@ -35,6 +39,7 @@ export class CareStateService {
     this.treatment.set('');
     this.weightSuggestionLabel.set('');
     this.followUpDate.set(null);
+    this.pendingExamNames.set([]);
   }
 
   // abre o atendimento pra um pet especifico, ja sugerindo o peso (do ultimo
@@ -66,6 +71,16 @@ export class CareStateService {
 
   setFollowUpDate(value: string | null): void {
     this.followUpDate.set(value || null);
+  }
+
+  addPendingExamName(name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    this.pendingExamNames.update((names) => [...names, trimmed]);
+  }
+
+  removePendingExamName(index: number): void {
+    this.pendingExamNames.update((names) => names.filter((_, i) => i !== index));
   }
 
   complete(): void {

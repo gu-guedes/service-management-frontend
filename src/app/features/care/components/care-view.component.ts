@@ -89,6 +89,25 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <input type="date" [value]="followUpDate ?? ''" (input)="onFollowUpDateInput($event)" />
                 <span class="sub">Opcional — ex: avisar o tutor apos o fim de um tratamento.</span>
               </label>
+              <label>
+                Exames solicitados
+                <div class="exam-input-row">
+                  <input
+                    type="text"
+                    #examInput
+                    placeholder="Ex: Hemograma completo"
+                    (keydown.enter)="$event.preventDefault(); addExam(examInput)"
+                  />
+                  <button type="button" class="ghost-btn" (click)="addExam(examInput)">+ Adicionar</button>
+                </div>
+                <div class="pets-inline compact" *ngIf="pendingExamNames.length">
+                  <span class="pet-chip" *ngFor="let name of pendingExamNames; let i = index">
+                    <span class="strong">{{ name }}</span>
+                    <button type="button" class="chip-remove" (click)="removeExam.emit(i)">×</button>
+                  </span>
+                </div>
+                <span class="sub">Opcional — resultado (PDF) pode ser anexado depois, no detalhe do atendimento.</span>
+              </label>
             </div>
             <button type="button" class="primary-btn" [disabled]="isCompletingVisit" (click)="complete.emit()">
               {{ isCompletingVisit ? 'Salvando...' : 'Salvar atendimento' }}
@@ -120,6 +139,7 @@ export class CareViewComponent {
   @Input() complaint = '';
   @Input() treatment = '';
   @Input() followUpDate: string | null = null;
+  @Input() pendingExamNames: string[] = [];
   @Input() isCompletingVisit = false;
 
   @Output() close = new EventEmitter<void>();
@@ -129,6 +149,8 @@ export class CareViewComponent {
   @Output() complaintChange = new EventEmitter<string>();
   @Output() treatmentChange = new EventEmitter<string>();
   @Output() followUpDateChange = new EventEmitter<string | null>();
+  @Output() addExamName = new EventEmitter<string>();
+  @Output() removeExam = new EventEmitter<number>();
 
   onWeightInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
@@ -146,5 +168,12 @@ export class CareViewComponent {
   onFollowUpDateInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
     this.followUpDateChange.emit(raw || null);
+  }
+
+  addExam(input: HTMLInputElement): void {
+    const name = input.value.trim();
+    if (!name) return;
+    this.addExamName.emit(name);
+    input.value = '';
   }
 }

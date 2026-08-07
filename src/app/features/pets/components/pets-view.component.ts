@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
 import { ProductApplicationResponseDTO } from '../../../core/services/product-applications-api.service';
+import { ExamRequestResponseDTO } from '../../../core/services/exam-requests-api.service';
 import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
@@ -10,7 +11,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
   imports: [CommonModule],
   template: `
     <section class="pets-view">
-      <div class="due-panels-row" *ngIf="dueFollowUps.length || expiringProducts.length">
+      <div class="due-panels-row" *ngIf="dueFollowUps.length || expiringProducts.length || pendingExams.length">
         <article class="card due-followups-card" *ngIf="dueFollowUps.length">
           <header class="card-header pets-header">
             <div>
@@ -65,6 +66,28 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
             </div>
           </div>
         </article>
+
+        <article class="card due-followups-card" *ngIf="pendingExams.length">
+          <header class="card-header pets-header">
+            <div>
+              <h3>🧪 Exames pendentes</h3>
+              <p>{{ pendingExams.length }} {{ pendingExams.length === 1 ? 'exame aguardando resultado' : 'exames aguardando resultado' }}</p>
+            </div>
+          </header>
+
+          <div class="due-followups-list">
+            <div class="due-followup-item" *ngFor="let exam of pendingExams">
+              <div>
+                <p class="strong">{{ exam.patientName }}</p>
+                <p class="sub">{{ exam.examName }}</p>
+                <p class="sub">Solicitado em {{ formatFollowUpDate(exam.requestedDate) }}</p>
+              </div>
+              <button type="button" class="ghost-btn" (click)="openExamVisit.emit(exam)">
+                Abrir atendimento
+              </button>
+            </div>
+          </div>
+        </article>
       </div>
 
       <article class="card">
@@ -109,6 +132,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
                       {{ pet.name }}
                       <span *ngIf="pet.id !== null && dueFollowUpPatientIds.has(pet.id)" title="Retorno pendente">🔔</span>
                       <span *ngIf="pet.id !== null && expiringProductPatientIds.has(pet.id)" title="Produto vencendo">🏷️</span>
+                      <span *ngIf="pet.id !== null && pendingExamPatientIds.has(pet.id)" title="Exame pendente">🧪</span>
                     </p>
                     <p class="sub">{{ pet.summary }}</p>
                   </div>
@@ -163,12 +187,15 @@ export class PetsViewComponent {
   @Input() markingFollowUpDoneIds: Set<number> = new Set();
   @Input() expiringProducts: ProductApplicationResponseDTO[] = [];
   @Input() expiringProductPatientIds: Set<number> = new Set();
+  @Input() pendingExams: ExamRequestResponseDTO[] = [];
+  @Input() pendingExamPatientIds: Set<number> = new Set();
 
   @Output() petFilterChange = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
   @Output() startCare = new EventEmitter<string>();
   @Output() markFollowUpDone = new EventEmitter<number>();
   @Output() addProduct = new EventEmitter<string>();
+  @Output() openExamVisit = new EventEmitter<ExamRequestResponseDTO>();
 
   formatFollowUpDate(dateOnlyIso: string | null): string {
     return toBrDateFromDateOnly(dateOnlyIso);

@@ -551,6 +551,30 @@ tbody tr:hover {
 	padding: 0;
 }
 
+// campo de texto + botao "+ Adicionar" pra montar a lista de exames antes de salvar o atendimento
+.exam-input-row {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.exam-input-row input {
+	flex: 1;
+}
+
+.chip-remove {
+	border: 0;
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 0.9rem;
+	line-height: 1;
+	padding: 0;
+}
+
+.chip-remove:hover {
+	color: var(--text);
+}
+
 .pet-cell.between {
 	justify-content: space-between;
 }

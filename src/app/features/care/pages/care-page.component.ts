@@ -9,6 +9,8 @@ import { ModalStateService } from '../../../core/services/modal-state.service';
 import { PetsStateService } from '../../../core/services/pets-state.service';
 import { MedicalRecordsApiService } from '../../../core/services/medical-records-api.service';
 import { MedicalRecordsStateService } from '../../../core/services/medical-records-state.service';
+import { ExamRequestsApiService, ExamRequestResponseDTO } from '../../../core/services/exam-requests-api.service';
+import { ExamRequestsStateService } from '../../../core/services/exam-requests-state.service';
 import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
@@ -28,38 +30,48 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [complaint]="careState.complaint()"
       [treatment]="careState.treatment()"
       [followUpDate]="careState.followUpDate()"
+      [pendingExamNames]="careState.pendingExamNames()"
       [isCompletingVisit]="isCompletingVisit()"
       (close)="close()"
       (weightKgChange)="careState.setWeightKg($event)"
       (complaintChange)="careState.setComplaint($event)"
       (treatmentChange)="careState.setTreatment($event)"
       (followUpDateChange)="careState.setFollowUpDate($event)"
+      (addExamName)="careState.addPendingExamName($event)"
+      (removeExam)="careState.removePendingExamName($event)"
       (complete)="completeCareVisit()"
       (openVisit)="modalState.openVisitDetail($event)"
     />
 
     <app-visit-detail-view
-      *ngIf="modalState.selectedVisitRecord()"
-      [record]="modalState.selectedVisitRecord()"
+      *ngIf="modalState.selectedVisitRecord() as record"
+      [record]="record"
       [petName]="modalState.selectedPet()?.name || ''"
       [petEmoji]="modalState.selectedPetEmoji()"
       [tutorName]="modalState.selectedPet()?.tutor || ''"
       [isMarkingFollowUpDone]="isMarkingFollowUpDone()"
+      [examRequests]="examRequestsState.findByMedicalRecordId(record.id)"
+      [uploadingExamIds]="uploadingExamIds()"
       (close)="modalState.closeVisitDetail()"
       (markFollowUpDone)="markFollowUpDone($event)"
+      (uploadExamResult)="uploadExamResult($event.examId, $event.file)"
+      (downloadExamResult)="downloadExamResult($event)"
     />
   `
 })
 export class CarePageComponent {
   readonly careState = inject(CareStateService);
   readonly modalState = inject(ModalStateService);
+  readonly examRequestsState = inject(ExamRequestsStateService);
   private readonly petsState = inject(PetsStateService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
   private readonly medicalRecordsState = inject(MedicalRecordsStateService);
+  private readonly examRequestsApi = inject(ExamRequestsApiService);
   private readonly router = inject(Router);
 
   readonly isCompletingVisit = signal(false);
   readonly isMarkingFollowUpDone = signal(false);
+  readonly uploadingExamIds = signal<Set<number>>(new Set());
 
   close(): void {
     this.careState.close();
@@ -100,6 +112,16 @@ export class CarePageComponent {
       this.modalState.reloadSelectedPetVisits();
       this.medicalRecordsState.addRecord(record);
       this.petsState.updateLastVisit(pet.id, toBrDateFromIso(record.recordDate));
+
+      const examNames = this.careState.pendingExamNames();
+      if (examNames.length) {
+        const created = await Promise.all(
+          examNames.map((examName) =>
+            firstValueFrom(this.examRequestsApi.create({ medicalRecordId: record.id, examName }))
+          )
+        );
+        created.forEach((exam) => this.examRequestsState.addRecord(exam));
+      }
     } catch {
       this.careState.setCompletionMessage('Nao foi possivel salvar o atendimento agora. Tente novamente.');
     } finally {
@@ -131,5 +153,34 @@ export class CarePageComponent {
     } finally {
       this.isMarkingFollowUpDone.set(false);
     }
+  }
+
+  async uploadExamResult(examId: number, file: File): Promise<void> {
+    this.uploadingExamIds.update((ids) => new Set(ids).add(examId));
+
+    try {
+      const updated = await firstValueFrom(this.examRequestsApi.uploadResult(examId, file));
+      this.examRequestsState.updateRecord(examId, {
+        resultFileName: updated.resultFileName,
+        resultUploadedAt: updated.resultUploadedAt
+      });
+    } finally {
+      this.uploadingExamIds.update((ids) => {
+        const next = new Set(ids);
+        next.delete(examId);
+        return next;
+      });
+    }
+  }
+
+  // baixa via blob (nao um <a href> direto) pra levar o header de autenticacao
+  async downloadExamResult(exam: ExamRequestResponseDTO): Promise<void> {
+    const blob = await firstValueFrom(this.examRequestsApi.downloadResult(exam.id));
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = exam.resultFileName || 'resultado.pdf';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }
