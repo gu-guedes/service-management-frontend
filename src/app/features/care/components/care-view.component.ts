@@ -72,8 +72,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   rows="4"
                   placeholder="Motivo do atendimento — o que o tutor relatou"
                   [value]="complaint"
+                  [class.invalid]="submitAttempted && !complaint.trim()"
                   (input)="onComplaintInput($event)"
                 ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !complaint.trim()">
+                  Informe a queixa.
+                </span>
               </label>
               <label>
                 Tratamento <span class="req">*</span>
@@ -81,8 +85,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   rows="4"
                   placeholder="Conduta, medicacao e orientacoes"
                   [value]="treatment"
+                  [class.invalid]="submitAttempted && !treatment.trim()"
                   (input)="onTreatmentInput($event)"
                 ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !treatment.trim()">
+                  Informe o tratamento.
+                </span>
               </label>
               <label>
                 Lembrar de retorno em
@@ -141,6 +149,7 @@ export class CareViewComponent {
   @Input() followUpDate: string | null = null;
   @Input() pendingExamNames: string[] = [];
   @Input() isCompletingVisit = false;
+  @Input() submitAttempted = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() complete = new EventEmitter<void>();

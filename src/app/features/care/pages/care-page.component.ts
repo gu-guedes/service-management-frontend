@@ -32,6 +32,7 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [followUpDate]="careState.followUpDate()"
       [pendingExamNames]="careState.pendingExamNames()"
       [isCompletingVisit]="isCompletingVisit()"
+      [submitAttempted]="submitAttempted()"
       (close)="close()"
       (weightKgChange)="careState.setWeightKg($event)"
       (complaintChange)="careState.setComplaint($event)"
@@ -72,6 +73,7 @@ export class CarePageComponent {
   readonly isCompletingVisit = signal(false);
   readonly isMarkingFollowUpDone = signal(false);
   readonly uploadingExamIds = signal<Set<number>>(new Set());
+  readonly submitAttempted = signal(false);
 
   close(): void {
     this.careState.close();
@@ -80,6 +82,7 @@ export class CarePageComponent {
   }
 
   async completeCareVisit(): Promise<void> {
+    this.submitAttempted.set(true);
     const pet = this.modalState.selectedPet();
 
     if (!pet?.id) {
