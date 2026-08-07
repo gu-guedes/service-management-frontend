@@ -113,6 +113,9 @@
 	flex-direction: column;
 	padding: 1.5rem;
 	gap: 1rem;
+	// item de grid do .layout-shell — sem isso o item nao encolhe abaixo da largura
+	// minima intrinseca do conteudo (ex: uma tabela larga), estourando a pagina
+	min-width: 0;
 }
 
 .main-content.full-screen {
@@ -130,6 +133,28 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
+}
+
+// escondido no desktop — vira visivel dentro do breakpoint de 1080px (ver abaixo)
+.hamburger-btn {
+	display: none;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	border-radius: 0.6rem;
+	font-size: 1.1rem;
+	line-height: 1;
+	padding: 0.5rem 0.7rem;
+	cursor: pointer;
+}
+
+// so faz sentido junto com a sidebar-overlay do breakpoint de 1080px — evita
+// cobrir a tela em desktop se a janela for redimensionada com o menu aberto
+.sidebar-backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	z-index: 30;
 }
 
 .topbar h1 {
@@ -271,6 +296,13 @@
 	border: 1px solid var(--border);
 	border-radius: 0.9rem;
 	overflow: hidden;
+}
+
+// regiao de scroll propria pra tabelas largas — o .card acima corta (overflow:hidden),
+// entao a tabela precisa do seu proprio scroll horizontal em vez de estourar a pagina
+.table-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .card-header {
@@ -1616,13 +1648,30 @@ tbody tr:hover {
 		grid-template-columns: 1fr;
 	}
 
-	.sidebar {
-		min-height: auto;
+	.hamburger-btn {
+		display: inline-flex;
 	}
 
-	.main-nav {
-		flex-direction: row;
-		flex-wrap: wrap;
+	// sidebar vira um painel deslizante (menu hamburguer), fechado por padrao —
+	// tirada do fluxo do grid (position:fixed), por isso .layout-shell so precisa de 1 coluna
+	.sidebar {
+		position: fixed;
+		inset: 0 auto 0 0;
+		width: 240px;
+		max-width: 85vw;
+		min-height: 100vh;
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+		z-index: 40;
+		overflow-y: auto;
+	}
+
+	.sidebar.mobile-open {
+		transform: translateX(0);
+	}
+
+	.sidebar-backdrop {
+		display: block;
 	}
 
 	.content-grid {
@@ -1659,6 +1708,21 @@ tbody tr:hover {
 
 	.due-panels-row {
 		flex-direction: column;
+	}
+
+	// em coluna, flex-basis:0 (herdado da regra de linha) faz o card colapsar quase a zero
+	// de altura em vez de crescer pro tamanho do conteudo — precisa virar auto aqui
+	.due-panels-row .due-followups-card {
+		flex: 1 1 auto;
+	}
+
+	.due-followup-item {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.due-followup-item .ghost-btn {
+		width: 100%;
 	}
 
 	.pets-header {
@@ -1729,5 +1793,27 @@ tbody tr:hover {
 	.prog-sidebar {
 		border-right: 0;
 		border-bottom: 1px solid var(--border);
+	}
+
+	// alvos de toque maiores — desktop fica como esta, isso so vale no mobile
+	.primary-btn,
+	.ghost-btn {
+		padding: 0.75rem 1rem;
+		font-size: 0.85rem;
+	}
+
+	.filter-chip {
+		padding: 0.5rem 0.85rem;
+	}
+
+	.wizard-form input,
+	.wizard-form select,
+	.wizard-form textarea {
+		padding: 0.7rem 0.75rem;
+	}
+
+	.check-btn {
+		width: 32px;
+		height: 32px;
 	}
 }

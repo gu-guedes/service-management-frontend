@@ -36,6 +36,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           </div>
         </header>
 
+        <div class="table-scroll">
         <table>
           <thead>
             <tr>
@@ -94,6 +95,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             </ng-container>
           </tbody>
         </table>
+        </div>
       </article>
     </section>
   `

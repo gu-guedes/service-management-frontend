@@ -88,6 +88,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
           </button>
         </div>
 
+        <div class="table-scroll">
         <table>
           <thead>
             <tr>
@@ -137,6 +138,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
             </tr>
           </tbody>
         </table>
+        </div>
       </article>
     </section>
   `

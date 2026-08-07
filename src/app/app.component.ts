@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation, computed, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -86,6 +86,17 @@ export class AppComponent implements OnInit {
     { label: 'Fichas de Pets', icon: '🐾', route: '/app/pets' },
     { label: 'Tutores', icon: '👥', route: '/app/tutors' }
   ];
+
+  // sidebar vira um painel deslizante nesse breakpoint (ver app.component.scss) — fechado por padrao
+  readonly isMobileMenuOpen = signal(false);
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update((open) => !open);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
 
   // ----------------------------------------------------------------
   // Carrega tutores e pets reais da API ao abrir o app
