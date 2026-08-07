@@ -28,6 +28,7 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [weightKg]="careState.weightKg()"
       [weightSuggestionLabel]="careState.weightSuggestionLabel()"
       [complaint]="careState.complaint()"
+      [anamnesis]="careState.anamnesis()"
       [treatment]="careState.treatment()"
       [followUpDate]="careState.followUpDate()"
       [pendingExamNames]="careState.pendingExamNames()"
@@ -36,6 +37,7 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       (close)="close()"
       (weightKgChange)="careState.setWeightKg($event)"
       (complaintChange)="careState.setComplaint($event)"
+      (anamnesisChange)="careState.setAnamnesis($event)"
       (treatmentChange)="careState.setTreatment($event)"
       (followUpDateChange)="careState.setFollowUpDate($event)"
       (addExamName)="careState.addPendingExamName($event)"
@@ -105,6 +107,7 @@ export class CarePageComponent {
         this.medicalRecordsApi.create({
           patientId: pet.id,
           complaint,
+          anamnesis: this.careState.anamnesis().trim() || null,
           treatment,
           weightKg: this.careState.weightKg(),
           followUpDate: this.careState.followUpDate()
@@ -144,6 +147,7 @@ export class CarePageComponent {
         this.medicalRecordsApi.update(recordId, {
           patientId: record.patientId,
           complaint: record.complaint,
+          anamnesis: record.anamnesis,
           treatment: record.treatment,
           weightKg: record.weightKg,
           followUpDate: record.followUpDate,

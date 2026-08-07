@@ -67,6 +67,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <span class="sub" *ngIf="weightSuggestionLabel">{{ weightSuggestionLabel }} — confirme ou ajuste.</span>
               </label>
               <label>
+                Anamnese
+                <textarea
+                  rows="4"
+                  placeholder="Historico clinico relatado pelo tutor"
+                  [value]="anamnesis"
+                  (input)="onAnamnesisInput($event)"
+                ></textarea>
+                <span class="sub">Opcional</span>
+              </label>
+              <label>
                 Queixa <span class="req">*</span>
                 <textarea
                   rows="4"
@@ -145,6 +155,7 @@ export class CareViewComponent {
   @Input() weightKg: number | null = null;
   @Input() weightSuggestionLabel = '';
   @Input() complaint = '';
+  @Input() anamnesis = '';
   @Input() treatment = '';
   @Input() followUpDate: string | null = null;
   @Input() pendingExamNames: string[] = [];
@@ -156,6 +167,7 @@ export class CareViewComponent {
   @Output() openVisit = new EventEmitter<number>();
   @Output() weightKgChange = new EventEmitter<number | null>();
   @Output() complaintChange = new EventEmitter<string>();
+  @Output() anamnesisChange = new EventEmitter<string>();
   @Output() treatmentChange = new EventEmitter<string>();
   @Output() followUpDateChange = new EventEmitter<string | null>();
   @Output() addExamName = new EventEmitter<string>();
@@ -168,6 +180,10 @@ export class CareViewComponent {
 
   onComplaintInput(event: Event): void {
     this.complaintChange.emit((event.target as HTMLTextAreaElement).value);
+  }
+
+  onAnamnesisInput(event: Event): void {
+    this.anamnesisChange.emit((event.target as HTMLTextAreaElement).value);
   }
 
   onTreatmentInput(event: Event): void {
