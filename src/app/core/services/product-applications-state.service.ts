@@ -50,6 +50,14 @@ export class ProductApplicationsStateService {
     );
   });
 
+  // historico completo (todas as aplicacoes, nao so a mais recente por produto) de um pet —
+  // usado na ficha do pet, mais recente primeiro
+  findByPatientId(patientId: number): ProductApplicationResponseDTO[] {
+    return this._records()
+      .filter((r) => r.patientId === patientId)
+      .sort((a, b) => b.id - a.id);
+  }
+
   // substitui a lista inteira — usado ao carregar os dados reais da API
   replaceAll(records: ProductApplicationResponseDTO[]): void {
     this._records.set(records);
