@@ -65,6 +65,10 @@ export class CarePageComponent {
   }
 
   async completeCareVisit(): Promise<void> {
+    // guarda contra clique duplo — sem isso, dois cliques rapidos no botao disparavam
+    // dois POSTs antes do primeiro terminar e desabilitar o botao a tempo
+    if (this.isCompletingVisit()) return;
+
     this.submitAttempted.set(true);
     const pet = this.modalState.selectedPet();
 

@@ -1,6 +1,5 @@
 export type PetFilter = 'all' | 'dog' | 'cat' | 'other';
 
-// status/statusClass refletem o campo real "active" do paciente na API
 // lastVisit = data do atendimento mais recente (medical-records); registeredAt = data de cadastro do pet
 export interface PetRecord {
   id: number | null;
@@ -11,8 +10,6 @@ export interface PetRecord {
   tutorInitials: string;
   lastVisit: string;
   registeredAt: string;
-  status: string;
-  statusClass: string;
   weightKg: number | null;
 }
 

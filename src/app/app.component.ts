@@ -152,8 +152,6 @@ export class AppComponent implements OnInit {
       tutorInitials: toInitials(tutorName ?? ''),
       lastVisit: lastVisitIso ? toBrDateFromIso(lastVisitIso) : 'Sem atendimentos',
       registeredAt: toBrDateFromIso(patient.createdAt),
-      status: patient.active ? 'Ativo' : 'Inativo',
-      statusClass: patient.active ? 'is-green' : 'is-gray',
       weightKg: patient.weightKg ?? null
     };
   }

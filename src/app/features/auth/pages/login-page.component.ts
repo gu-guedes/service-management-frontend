@@ -26,6 +26,8 @@ export class LoginPageComponent {
   });
 
   async submit(): Promise<void> {
+    if (this.isSubmitting) return;
+
     this.authError = '';
 
     if (this.form.invalid) {

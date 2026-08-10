@@ -128,6 +128,8 @@ export class RegistrationPageComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
+    if (this.isSubmittingRegistration()) return;
+
     this.registrationError.set('');
 
     if (this.petForm.invalid) { this.petForm.markAllAsTouched(); return; }
@@ -185,8 +187,6 @@ export class RegistrationPageComponent implements OnInit {
           tutorInitials,
           lastVisit: 'Sem atendimentos',
           registeredAt: response.createdAt,
-          status: 'Ativo',
-          statusClass: 'is-green',
           weightKg: petPayload.weight
         });
 
@@ -221,8 +221,6 @@ export class RegistrationPageComponent implements OnInit {
           tutorInitials: selectedTutor.initials,
           lastVisit: 'Sem atendimentos',
           registeredAt: response.createdAt,
-          status: 'Ativo',
-          statusClass: 'is-green',
           weightKg: petPayload.weight
         });
       }

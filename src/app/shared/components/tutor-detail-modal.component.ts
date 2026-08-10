@@ -206,6 +206,8 @@ export class TutorDetailModalComponent {
   }
 
   async saveEditTutor(): Promise<void> {
+    if (this.isSavingEdit()) return;
+
     const tutor = this.modalState.selectedTutor();
     if (!tutor) return;
 
@@ -246,6 +248,8 @@ export class TutorDetailModalComponent {
   }
 
   async deleteTutor(): Promise<void> {
+    if (this.isSavingEdit()) return;
+
     const tutor = this.modalState.selectedTutor();
     if (!tutor) return;
 

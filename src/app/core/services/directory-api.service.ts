@@ -87,11 +87,6 @@ export class DirectoryApiService {
     return this.http.put<PatientResponseDTO>(`patients/${id}`, dto);
   }
 
-  // "Inativar": o backend marca active=false, pet continua na lista com badge cinza
-  deactivatePatient(id: number): Observable<void> {
-    return this.http.post<void>(`patients/${id}/deactivate`, {});
-  }
-
   // "Excluir": some da lista de pets de vez (nao apaga a linha, preserva historico); nao mexe no tutor
   deletePatient(id: number): Observable<void> {
     return this.http.delete<void>(`patients/${id}`);

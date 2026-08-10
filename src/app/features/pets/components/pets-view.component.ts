@@ -34,7 +34,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
               <th>Pet</th>
               <th>Tutor</th>
               <th>Ultima Visita</th>
-              <th>Status</th>
               <th></th>
             </tr>
           </thead>
@@ -56,9 +55,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 </div>
               </td>
               <td>{{ pet.lastVisit }}</td>
-              <td>
-                <span class="badge" [ngClass]="pet.statusClass">{{ pet.status }}</span>
-              </td>
               <td class="pet-actions">
                 <button type="button" class="ghost-btn" (click)="openPet.emit(pet.name)">
                   Ver ficha
@@ -82,8 +78,6 @@ export class PetsViewComponent {
     tutor: string;
     tutorInitials: string;
     lastVisit: string;
-    status: string;
-    statusClass: string;
   }> = [];
 
   @Input() petFilters: Array<{ key: string; label: string }> = [];
