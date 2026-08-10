@@ -169,6 +169,7 @@ export class RegistrationPageComponent implements OnInit {
           lastVisit: 'Sem atendimentos',
           registeredAt: response.createdAt,
           pets: [{
+            id: response.patientId as number,
             name: response.pet.name,
             details: this.toPetDetails(petPayload),
             icon: this.petsState.getPetEmoji(petPayload.species)
@@ -205,6 +206,7 @@ export class RegistrationPageComponent implements OnInit {
         );
 
         this.tutorsState.addPetToTutor(selectedTutor.id, {
+          id: response.patientId as number,
           name: response.pet.name,
           details: this.toPetDetails(petPayload),
           icon: this.petsState.getPetEmoji(petPayload.species)

@@ -70,6 +70,11 @@ export class PetsStateService {
     );
   }
 
+  // usado apos excluir um pet (ou todos os pets de um tutor excluido) — some da lista de vez
+  removeRecord(petId: number): void {
+    this._records.update((records) => records.filter((pet) => pet.id !== petId));
+  }
+
   getPetEmoji(species: PetRecord['species']): string {
     if (species === 'dog') return '🐶';
     if (species === 'cat') return '🐱';

@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ModalStateService } from '../../core/services/modal-state.service';
 import { TutorsStateService } from '../../core/services/tutors-state.service';
+import { PetsStateService } from '../../core/services/pets-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
 import { toAddressLabel } from '../utils/pet-tutor-formatting';
 
@@ -30,6 +31,7 @@ import { toAddressLabel } from '../utils/pet-tutor-formatting';
           </div>
           <div class="pet-actions">
             <button type="button" class="ghost-btn" *ngIf="!editingTutor()" (click)="startEditTutor()">Editar</button>
+            <button type="button" class="ghost-btn danger" *ngIf="!editingTutor()" (click)="deleteTutor()">Excluir</button>
             <button type="button" class="modal-close" (click)="close()">X</button>
           </div>
         </header>
@@ -152,6 +154,7 @@ export class TutorDetailModalComponent {
   private readonly fb = inject(FormBuilder);
   private readonly directoryApi = inject(DirectoryApiService);
   private readonly tutorsState = inject(TutorsStateService);
+  private readonly petsState = inject(PetsStateService);
   readonly modalState = inject(ModalStateService);
 
   readonly editingTutor = signal(false);
@@ -237,6 +240,33 @@ export class TutorDetailModalComponent {
       this.editingTutor.set(false);
     } catch {
       this.editError.set('Nao foi possivel salvar as alteracoes do tutor.');
+    } finally {
+      this.isSavingEdit.set(false);
+    }
+  }
+
+  async deleteTutor(): Promise<void> {
+    const tutor = this.modalState.selectedTutor();
+    if (!tutor) return;
+
+    if (
+      !confirm(
+        `Excluir ${tutor.name}? Todos os pets desse tutor tambem serao excluidos e essa acao nao pode ser desfeita por aqui.`
+      )
+    ) {
+      return;
+    }
+
+    this.isSavingEdit.set(true);
+    this.editError.set('');
+
+    try {
+      await firstValueFrom(this.directoryApi.deleteCustomer(Number(tutor.id)));
+      tutor.pets.forEach((pet) => this.petsState.removeRecord(pet.id));
+      this.tutorsState.removeRecord(tutor.id);
+      this.close();
+    } catch {
+      this.editError.set('Nao foi possivel excluir o tutor agora.');
     } finally {
       this.isSavingEdit.set(false);
     }

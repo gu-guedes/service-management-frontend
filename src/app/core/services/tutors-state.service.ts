@@ -27,7 +27,7 @@ export class TutorsStateService {
     this._records.set(records);
   }
 
-  addPetToTutor(tutorId: string, pet: { name: string; details: string; icon: string }): void {
+  addPetToTutor(tutorId: string, pet: { id: number; name: string; details: string; icon: string }): void {
     this._records.update((records) =>
       records.map((tutor) =>
         tutor.id === tutorId ? { ...tutor, pets: [...tutor.pets, pet] } : tutor
@@ -45,6 +45,19 @@ export class TutorsStateService {
   updateRecord(tutorId: string, patch: Partial<TutorRecord>): void {
     this._records.update((records) =>
       records.map((tutor) => (tutor.id === tutorId ? { ...tutor, ...patch } : tutor))
+    );
+  }
+
+  // usado apos excluir um tutor — some da lista de vez
+  removeRecord(tutorId: string): void {
+    this._records.update((records) => records.filter((tutor) => tutor.id !== tutorId));
+  }
+
+  // usado apos excluir um pet direto da ficha dele — tira o pet da lista de chips
+  // (embutida em cada TutorRecord) sem precisar saber de qual tutor ele e
+  removePet(petId: number): void {
+    this._records.update((records) =>
+      records.map((tutor) => ({ ...tutor, pets: tutor.pets.filter((pet) => pet.id !== petId) }))
     );
   }
 
