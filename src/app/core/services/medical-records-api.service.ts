@@ -8,8 +8,7 @@ export interface MedicalRecordResponseDTO {
   patientName: string;
   recordDate: string;
   complaint: string;
-  // opcional — historico clinico relatado pelo tutor
-  anamnesis: string | null;
+  anamnesis: string;
   treatment: string;
   weightKg: number | null;
   // formato yyyy-MM-dd (sem hora) — opcional, so quando o vet quer lembrete de retorno
@@ -21,7 +20,7 @@ export interface MedicalRecordResponseDTO {
 export interface MedicalRecordRequestDTO {
   patientId: number;
   complaint: string;
-  anamnesis?: string | null;
+  anamnesis: string;
   treatment: string;
   weightKg?: number | null;
   followUpDate?: string | null;

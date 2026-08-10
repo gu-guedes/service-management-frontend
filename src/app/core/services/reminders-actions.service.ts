@@ -36,6 +36,7 @@ export class RemindersActionsService {
         this.medicalRecordsApi.update(recordId, {
           patientId: record.patientId,
           complaint: record.complaint,
+          anamnesis: record.anamnesis,
           treatment: record.treatment,
           weightKg: record.weightKg,
           followUpDate: record.followUpDate,

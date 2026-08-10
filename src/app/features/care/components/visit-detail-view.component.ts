@@ -28,7 +28,7 @@ import { toBrDateFromDateOnly, toBrDateFromIso } from '../../../shared/utils/pet
             <p class="strong">{{ record.complaint }}</p>
           </div>
 
-          <div class="info-block" *ngIf="record.anamnesis">
+          <div class="info-block">
             <p class="label">Anamnese</p>
             <p class="strong">{{ record.anamnesis }}</p>
           </div>

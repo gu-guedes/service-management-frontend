@@ -51,10 +51,9 @@ import {
               <p class="pet-title">{{ pet.name }}</p>
               <p class="sub">{{ pet.summary }}</p>
             </div>
-            <span class="badge" [ngClass]="pet.statusClass">{{ pet.status }}</span>
             <div class="pet-actions" *ngIf="!editingPet()">
               <button type="button" class="ghost-btn" (click)="startEditPet()">Editar</button>
-              <button type="button" class="ghost-btn danger" *ngIf="pet.status !== 'Inativo'" (click)="deactivatePet()">Inativar</button>
+              <button type="button" class="ghost-btn danger" (click)="deletePet()">Excluir</button>
               <button type="button" class="primary-btn" (click)="openCareViewFromPet()">+ Atendimento</button>
             </div>
           </div>
@@ -300,6 +299,8 @@ export class PetDetailModalComponent {
   }
 
   async saveEditPet(): Promise<void> {
+    if (this.isSavingEdit()) return;
+
     const pet = this.modalState.selectedPet();
     if (!pet?.id || this.editingPetCustomerId === null) return;
 
@@ -347,20 +348,24 @@ export class PetDetailModalComponent {
     }
   }
 
-  async deactivatePet(): Promise<void> {
+  async deletePet(): Promise<void> {
+    if (this.isSavingEdit()) return;
+
     const pet = this.modalState.selectedPet();
     if (!pet?.id) return;
 
-    if (!confirm(`Inativar ${pet.name}? O pet sai das listagens ativas, mas o historico e mantido.`)) return;
+    if (!confirm(`Excluir ${pet.name}? Ele vai sumir da lista de pets e nao pode ser recuperado por aqui.`)) return;
 
     this.isSavingEdit.set(true);
     this.editError.set('');
 
     try {
-      await firstValueFrom(this.directoryApi.deactivatePatient(pet.id));
-      this.petsState.updateRecord(pet.id, { status: 'Inativo', statusClass: 'is-gray' });
+      await firstValueFrom(this.directoryApi.deletePatient(pet.id));
+      this.petsState.removeRecord(pet.id);
+      this.tutorsState.removePet(pet.id);
+      this.close();
     } catch {
-      this.editError.set('Nao foi possivel inativar o pet agora.');
+      this.editError.set('Nao foi possivel excluir o pet agora.');
     } finally {
       this.isSavingEdit.set(false);
     }

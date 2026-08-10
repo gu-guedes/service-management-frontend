@@ -12,7 +12,6 @@ export class CareStateService {
   readonly completionMessage = signal('');
   readonly weightKg = signal<number | null>(null);
   readonly complaint = signal('');
-  // opcional — historico clinico relatado pelo tutor
   readonly anamnesis = signal('');
   readonly treatment = signal('');
   readonly weightSuggestionLabel = signal('');

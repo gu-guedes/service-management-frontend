@@ -51,7 +51,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           <section class="care-card">
             <div class="care-card-header">
               <h4>Novo atendimento</h4>
-              <p>Queixa, tratamento e peso do atendimento</p>
+              <p>Queixa, anamnese, tratamento e peso do atendimento</p>
             </div>
             <div class="wizard-form care-form">
               <label>
@@ -67,14 +67,17 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <span class="sub" *ngIf="weightSuggestionLabel">{{ weightSuggestionLabel }} — confirme ou ajuste.</span>
               </label>
               <label>
-                Anamnese
+                Anamnese <span class="req">*</span>
                 <textarea
                   rows="4"
                   placeholder="Historico clinico relatado pelo tutor"
                   [value]="anamnesis"
+                  [class.invalid]="submitAttempted && !anamnesis.trim()"
                   (input)="onAnamnesisInput($event)"
                 ></textarea>
-                <span class="sub">Opcional</span>
+                <span class="field-error" *ngIf="submitAttempted && !anamnesis.trim()">
+                  Informe a anamnese.
+                </span>
               </label>
               <label>
                 Queixa <span class="req">*</span>

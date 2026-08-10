@@ -89,8 +89,13 @@ export class DirectoryApiService {
     return this.http.put<PatientResponseDTO>(`patients/${id}`, dto);
   }
 
-  // soft-delete: o backend marca active=false, nao apaga a linha (preserva historico)
-  deactivatePatient(id: number): Observable<void> {
+  // "Excluir": some da lista de pets de vez (nao apaga a linha, preserva historico); nao mexe no tutor
+  deletePatient(id: number): Observable<void> {
     return this.http.delete<void>(`patients/${id}`);
+  }
+
+  // "Excluir": some da lista de tutores de vez, e cascade some todos os pets desse tutor tambem
+  deleteCustomer(id: number): Observable<void> {
+    return this.http.delete<void>(`customers/${id}`);
   }
 }

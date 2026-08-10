@@ -1,4 +1,5 @@
 export interface TutorPet {
+  id: number;
   name: string;
   details: string;
   icon: string;

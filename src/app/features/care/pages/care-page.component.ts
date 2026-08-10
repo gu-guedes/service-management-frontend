@@ -84,6 +84,10 @@ export class CarePageComponent {
   }
 
   async completeCareVisit(): Promise<void> {
+    // guarda contra clique duplo — sem isso, dois cliques rapidos no botao disparavam
+    // dois POSTs antes do primeiro terminar e desabilitar o botao a tempo
+    if (this.isCompletingVisit()) return;
+
     this.submitAttempted.set(true);
     const pet = this.modalState.selectedPet();
 
@@ -93,10 +97,11 @@ export class CarePageComponent {
     }
 
     const complaint = this.careState.complaint().trim();
+    const anamnesis = this.careState.anamnesis().trim();
     const treatment = this.careState.treatment().trim();
 
-    if (!complaint || !treatment) {
-      this.careState.setCompletionMessage('Preencha a queixa e o tratamento antes de salvar.');
+    if (!complaint || !anamnesis || !treatment) {
+      this.careState.setCompletionMessage('Preencha a queixa, a anamnese e o tratamento antes de salvar.');
       return;
     }
 
@@ -107,7 +112,7 @@ export class CarePageComponent {
         this.medicalRecordsApi.create({
           patientId: pet.id,
           complaint,
-          anamnesis: this.careState.anamnesis().trim() || null,
+          anamnesis,
           treatment,
           weightKg: this.careState.weightKg(),
           followUpDate: this.careState.followUpDate()
