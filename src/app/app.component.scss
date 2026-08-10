@@ -413,13 +413,27 @@
 // cada card so tao alto quanto o proprio conteudo (align-items: start)
 .avisos-grid {
 	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 1rem;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.75rem;
 	align-items: start;
 }
 
 .avisos-grid .due-followups-card {
 	min-width: 0;
+}
+
+// versao compacta dos textos/espacamentos so dentro da grade de Avisos —
+// com 4 colunas o card fica bem mais estreito que o uso normal de .card-header
+.avisos-grid .card-header {
+	padding: 0.7rem 0.8rem;
+}
+
+.avisos-grid .card-header h3 {
+	font-size: 0.85rem;
+}
+
+.avisos-grid .card-header p {
+	font-size: 0.68rem;
 }
 
 .due-followups-card .card-header {
@@ -439,6 +453,17 @@
 	gap: 1rem;
 	padding: 0.75rem 1rem;
 	border-top: 1px solid var(--border);
+}
+
+.avisos-grid .due-followup-item {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.5rem;
+	padding: 0.6rem 0.8rem;
+}
+
+.avisos-grid .due-followup-item .ghost-btn {
+	width: 100%;
 }
 
 .due-followup-item:first-child {
@@ -1713,6 +1738,10 @@ tbody tr:hover {
 	}
 
 	.stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.avisos-grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
