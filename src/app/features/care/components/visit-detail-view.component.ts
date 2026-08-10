@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, inject } from '@angular/core';
 import { MedicalRecordResponseDTO } from '../../../core/services/medical-records-api.service';
 import { ExamRequestResponseDTO } from '../../../core/services/exam-requests-api.service';
+import { MedicalRecordImageResponseDTO, MedicalRecordImagesApiService } from '../../../core/services/medical-record-images-api.service';
+import { compressImage } from '../../../shared/utils/image-compression';
 import { toBrDateFromDateOnly, toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-visit-detail-view',
@@ -60,6 +63,33 @@ import { toBrDateFromDateOnly, toBrDateFromIso } from '../../../shared/utils/pet
             </button>
           </div>
 
+          <div class="info-block">
+            <p class="label">Fotos</p>
+            <div class="photo-thumbs" *ngIf="images.length">
+              <a
+                *ngFor="let img of images"
+                class="photo-thumb"
+                [href]="imageUrls.get(img.id)"
+                target="_blank"
+                rel="noopener"
+              >
+                <img *ngIf="imageUrls.get(img.id) as url" [src]="url" alt="{{ img.fileName }}" />
+              </a>
+            </div>
+            <p class="sub" *ngIf="!images.length">Nenhuma foto anexada.</p>
+            <div class="exam-input-row">
+              <input type="file" accept="image/*" multiple #imageInput />
+              <button
+                type="button"
+                class="ghost-btn"
+                [disabled]="isUploadingImages"
+                (click)="onAddImagesClick(imageInput)"
+              >
+                {{ isUploadingImages ? 'Enviando...' : 'Adicionar foto' }}
+              </button>
+            </div>
+          </div>
+
           <div class="info-block" *ngIf="examRequests.length">
             <p class="label">Exames</p>
             <div class="due-followups-list">
@@ -100,7 +130,9 @@ import { toBrDateFromDateOnly, toBrDateFromIso } from '../../../shared/utils/pet
     </section>
   `
 })
-export class VisitDetailViewComponent {
+export class VisitDetailViewComponent implements OnChanges, OnDestroy {
+  private readonly medicalRecordImagesApi = inject(MedicalRecordImagesApiService);
+
   @Input() record: MedicalRecordResponseDTO | null = null;
   @Input() petName = '';
   @Input() petEmoji = '🐾';
@@ -108,11 +140,52 @@ export class VisitDetailViewComponent {
   @Input() isMarkingFollowUpDone = false;
   @Input() examRequests: ExamRequestResponseDTO[] = [];
   @Input() uploadingExamIds: Set<number> = new Set();
+  @Input() images: MedicalRecordImageResponseDTO[] = [];
+  @Input() isUploadingImages = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() markFollowUpDone = new EventEmitter<number>();
   @Output() uploadExamResult = new EventEmitter<{ examId: number; file: File }>();
   @Output() downloadExamResult = new EventEmitter<ExamRequestResponseDTO>();
+  @Output() uploadImage = new EventEmitter<File>();
+
+  // cache de blob-url por imagem — buscadas sob demanda (precisam do header de
+  // autenticacao, um <img src> puro nao levaria), revogadas ao trocar/destruir
+  readonly imageUrls = new Map<number, string>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['images']) return;
+
+    const currentIds = new Set(this.images.map((img) => img.id));
+
+    for (const [id, url] of this.imageUrls) {
+      if (!currentIds.has(id)) {
+        URL.revokeObjectURL(url);
+        this.imageUrls.delete(id);
+      }
+    }
+
+    for (const img of this.images) {
+      if (this.imageUrls.has(img.id)) continue;
+      firstValueFrom(this.medicalRecordImagesApi.getImageBlob(img.id)).then((blob) => {
+        this.imageUrls.set(img.id, URL.createObjectURL(blob));
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.imageUrls.forEach((url) => URL.revokeObjectURL(url));
+  }
+
+  async onAddImagesClick(input: HTMLInputElement): Promise<void> {
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+
+    for (const file of files) {
+      const compressed = await compressImage(file);
+      this.uploadImage.emit(compressed);
+    }
+  }
 
   get followUpDateLabel(): string {
     return toBrDateFromDateOnly(this.record?.followUpDate);

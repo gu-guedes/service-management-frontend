@@ -14,6 +14,8 @@ import { ProductApplicationsApiService } from './core/services/product-applicati
 import { ProductApplicationsStateService } from './core/services/product-applications-state.service';
 import { ExamRequestsApiService } from './core/services/exam-requests-api.service';
 import { ExamRequestsStateService } from './core/services/exam-requests-state.service';
+import { MedicalRecordImagesApiService } from './core/services/medical-record-images-api.service';
+import { MedicalRecordImagesStateService } from './core/services/medical-record-images-state.service';
 import { PetRecord } from './features/pets/models/pets.models';
 import { TutorRecord } from './features/tutors/models/tutors.models';
 import { PetDetailModalComponent } from './shared/components/pet-detail-modal.component';
@@ -65,12 +67,14 @@ export class AppComponent implements OnInit {
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
   private readonly productApplicationsApi = inject(ProductApplicationsApiService);
   private readonly examRequestsApi = inject(ExamRequestsApiService);
+  private readonly medicalRecordImagesApi = inject(MedicalRecordImagesApiService);
 
   readonly petsState = inject(PetsStateService);
   readonly tutorsState = inject(TutorsStateService);
   private readonly medicalRecordsState = inject(MedicalRecordsStateService);
   private readonly productApplicationsState = inject(ProductApplicationsStateService);
   private readonly examRequestsState = inject(ExamRequestsStateService);
+  private readonly medicalRecordImagesState = inject(MedicalRecordImagesStateService);
 
   // paginas de atendimento e cadastro sao tela cheia — sem sidebar/topbar/tabs
   private readonly currentUrl = toSignal(
@@ -116,15 +120,17 @@ export class AppComponent implements OnInit {
       patients: this.directoryApi.getPatients(),
       medicalRecords: this.medicalRecordsApi.getAll(),
       productApplications: this.productApplicationsApi.getAll(),
-      examRequests: this.examRequestsApi.getAll()
+      examRequests: this.examRequestsApi.getAll(),
+      medicalRecordImages: this.medicalRecordImagesApi.getAll()
     }).subscribe({
-      next: ({ customers, patients, medicalRecords, productApplications, examRequests }) => {
+      next: ({ customers, patients, medicalRecords, productApplications, examRequests, medicalRecordImages }) => {
         const customerNameById = new Map(customers.map((c) => [c.id, c.name]));
         const lastVisitByPatientId = this.toLastVisitMap(medicalRecords);
 
         this.medicalRecordsState.replaceAll(medicalRecords);
         this.productApplicationsState.replaceAll(productApplications);
         this.examRequestsState.replaceAll(examRequests);
+        this.medicalRecordImagesState.replaceAll(medicalRecordImages);
 
         this.petsState.replaceAll(
           patients.map((patient) =>

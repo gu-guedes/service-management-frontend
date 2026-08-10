@@ -11,6 +11,8 @@ import { MedicalRecordsApiService } from '../../../core/services/medical-records
 import { MedicalRecordsStateService } from '../../../core/services/medical-records-state.service';
 import { ExamRequestsApiService, ExamRequestResponseDTO } from '../../../core/services/exam-requests-api.service';
 import { ExamRequestsStateService } from '../../../core/services/exam-requests-state.service';
+import { MedicalRecordImagesApiService } from '../../../core/services/medical-record-images-api.service';
+import { MedicalRecordImagesStateService } from '../../../core/services/medical-record-images-state.service';
 import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
@@ -32,6 +34,7 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [treatment]="careState.treatment()"
       [followUpDate]="careState.followUpDate()"
       [pendingExamNames]="careState.pendingExamNames()"
+      [pendingImages]="careState.pendingImages()"
       [isCompletingVisit]="isCompletingVisit()"
       [submitAttempted]="submitAttempted()"
       (close)="close()"
@@ -42,6 +45,8 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       (followUpDateChange)="careState.setFollowUpDate($event)"
       (addExamName)="careState.addPendingExamName($event)"
       (removeExam)="careState.removePendingExamName($event)"
+      (addImage)="careState.addPendingImage($event)"
+      (removeImage)="careState.removePendingImage($event)"
       (complete)="completeCareVisit()"
       (openVisit)="modalState.openVisitDetail($event)"
     />
@@ -55,10 +60,13 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [isMarkingFollowUpDone]="isMarkingFollowUpDone()"
       [examRequests]="examRequestsState.findByMedicalRecordId(record.id)"
       [uploadingExamIds]="uploadingExamIds()"
+      [images]="medicalRecordImagesState.findByMedicalRecordId(record.id)"
+      [isUploadingImages]="isUploadingImages()"
       (close)="modalState.closeVisitDetail()"
       (markFollowUpDone)="markFollowUpDone($event)"
       (uploadExamResult)="uploadExamResult($event.examId, $event.file)"
       (downloadExamResult)="downloadExamResult($event)"
+      (uploadImage)="uploadImageToVisit(record.id, $event)"
     />
   `
 })
@@ -66,15 +74,18 @@ export class CarePageComponent {
   readonly careState = inject(CareStateService);
   readonly modalState = inject(ModalStateService);
   readonly examRequestsState = inject(ExamRequestsStateService);
+  readonly medicalRecordImagesState = inject(MedicalRecordImagesStateService);
   private readonly petsState = inject(PetsStateService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
   private readonly medicalRecordsState = inject(MedicalRecordsStateService);
   private readonly examRequestsApi = inject(ExamRequestsApiService);
+  private readonly medicalRecordImagesApi = inject(MedicalRecordImagesApiService);
   private readonly router = inject(Router);
 
   readonly isCompletingVisit = signal(false);
   readonly isMarkingFollowUpDone = signal(false);
   readonly uploadingExamIds = signal<Set<number>>(new Set());
+  readonly isUploadingImages = signal(false);
   readonly submitAttempted = signal(false);
 
   close(): void {
@@ -133,6 +144,14 @@ export class CarePageComponent {
         );
         created.forEach((exam) => this.examRequestsState.addRecord(exam));
       }
+
+      const pendingImages = this.careState.pendingImages();
+      if (pendingImages.length) {
+        const createdImages = await Promise.all(
+          pendingImages.map((img) => firstValueFrom(this.medicalRecordImagesApi.upload(record.id, img.file)))
+        );
+        createdImages.forEach((img) => this.medicalRecordImagesState.addRecord(img));
+      }
     } catch {
       this.careState.setCompletionMessage('Nao foi possivel salvar o atendimento agora. Tente novamente.');
     } finally {
@@ -164,6 +183,19 @@ export class CarePageComponent {
       this.modalState.reloadSelectedPetVisits();
     } finally {
       this.isMarkingFollowUpDone.set(false);
+    }
+  }
+
+  // anexa uma foto depois que o atendimento ja foi salvo (aberto no historico) —
+  // mesmo endpoint do upload feito logo apos salvar, so que com o medicalRecordId ja existente
+  async uploadImageToVisit(medicalRecordId: number, file: File): Promise<void> {
+    this.isUploadingImages.set(true);
+
+    try {
+      const created = await firstValueFrom(this.medicalRecordImagesApi.upload(medicalRecordId, file));
+      this.medicalRecordImagesState.addRecord(created);
+    } finally {
+      this.isUploadingImages.set(false);
     }
   }
 

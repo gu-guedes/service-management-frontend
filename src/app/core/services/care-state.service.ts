@@ -1,6 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { PetRecord } from '../../features/pets/models/pets.models';
 
+// previewUrl e gerado uma unica vez (URL.createObjectURL) e revogado ao remover/resetar —
+// gerar isso no template a cada change detection vazaria memoria
+export interface PendingImage {
+  file: File;
+  previewUrl: string;
+}
+
 // -------------------------------------------------------------------
 // Serviço de estado do atendimento (prontuário)
 // Responsabilidade: os campos hoje persistidos na API real
@@ -20,6 +27,8 @@ export class CareStateService {
   // exames sendo adicionados nesse atendimento em andamento — so viram ExamRequest de
   // verdade depois de salvar (precisam do id do atendimento, que ainda nao existe aqui)
   readonly pendingExamNames = signal<string[]>([]);
+  // fotos ja comprimidas, aguardando o atendimento ser salvo pra saber o medicalRecordId
+  readonly pendingImages = signal<PendingImage[]>([]);
 
   open(): void {
     this.isOpen.set(true);
@@ -31,6 +40,7 @@ export class CareStateService {
     this.weightSuggestionLabel.set('');
     this.followUpDate.set(null);
     this.pendingExamNames.set([]);
+    this.clearPendingImages();
   }
 
   close(): void {
@@ -43,6 +53,7 @@ export class CareStateService {
     this.weightSuggestionLabel.set('');
     this.followUpDate.set(null);
     this.pendingExamNames.set([]);
+    this.clearPendingImages();
   }
 
   // abre o atendimento pra um pet especifico, ja sugerindo o peso (do ultimo
@@ -88,6 +99,24 @@ export class CareStateService {
 
   removePendingExamName(index: number): void {
     this.pendingExamNames.update((names) => names.filter((_, i) => i !== index));
+  }
+
+  addPendingImage(file: File): void {
+    const previewUrl = URL.createObjectURL(file);
+    this.pendingImages.update((images) => [...images, { file, previewUrl }]);
+  }
+
+  removePendingImage(index: number): void {
+    this.pendingImages.update((images) => {
+      const removed = images[index];
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return images.filter((_, i) => i !== index);
+    });
+  }
+
+  private clearPendingImages(): void {
+    this.pendingImages().forEach((img) => URL.revokeObjectURL(img.previewUrl));
+    this.pendingImages.set([]);
   }
 
   complete(): void {

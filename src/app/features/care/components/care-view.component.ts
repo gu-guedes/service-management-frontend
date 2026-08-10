@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { PendingImage } from '../../../core/services/care-state.service';
+import { compressImage } from '../../../shared/utils/image-compression';
 
 @Component({
   selector: 'app-care-view',
@@ -129,6 +131,17 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 </div>
                 <span class="sub">Opcional — resultado (PDF) pode ser anexado depois, no detalhe do atendimento.</span>
               </label>
+              <label>
+                Fotos
+                <input type="file" accept="image/*" multiple (change)="onImagesSelected($event)" />
+                <div class="photo-thumbs" *ngIf="pendingImages.length">
+                  <div class="photo-thumb" *ngFor="let img of pendingImages; let i = index">
+                    <img [src]="img.previewUrl" alt="Previa da foto anexada" />
+                    <button type="button" class="chip-remove" (click)="removeImage.emit(i)">×</button>
+                  </div>
+                </div>
+                <span class="sub">Opcional — tambem pode ser anexado depois, no detalhe do atendimento.</span>
+              </label>
             </div>
             <button type="button" class="primary-btn" [disabled]="isCompletingVisit" (click)="complete.emit()">
               {{ isCompletingVisit ? 'Salvando...' : 'Salvar atendimento' }}
@@ -162,6 +175,7 @@ export class CareViewComponent {
   @Input() treatment = '';
   @Input() followUpDate: string | null = null;
   @Input() pendingExamNames: string[] = [];
+  @Input() pendingImages: PendingImage[] = [];
   @Input() isCompletingVisit = false;
   @Input() submitAttempted = false;
 
@@ -175,6 +189,8 @@ export class CareViewComponent {
   @Output() followUpDateChange = new EventEmitter<string | null>();
   @Output() addExamName = new EventEmitter<string>();
   @Output() removeExam = new EventEmitter<number>();
+  @Output() addImage = new EventEmitter<File>();
+  @Output() removeImage = new EventEmitter<number>();
 
   onWeightInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
@@ -203,5 +219,16 @@ export class CareViewComponent {
     if (!name) return;
     this.addExamName.emit(name);
     input.value = '';
+  }
+
+  async onImagesSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+
+    for (const file of files) {
+      const compressed = await compressImage(file);
+      this.addImage.emit(compressed);
+    }
   }
 }
