@@ -25,11 +25,14 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [weightKg]="careState.weightKg()"
       [weightSuggestionLabel]="careState.weightSuggestionLabel()"
       [complaint]="careState.complaint()"
+      [anamnesis]="careState.anamnesis()"
       [treatment]="careState.treatment()"
       [isCompletingVisit]="isCompletingVisit()"
+      [submitAttempted]="submitAttempted()"
       (close)="close()"
       (weightKgChange)="careState.setWeightKg($event)"
       (complaintChange)="careState.setComplaint($event)"
+      (anamnesisChange)="careState.setAnamnesis($event)"
       (treatmentChange)="careState.setTreatment($event)"
       (complete)="completeCareVisit()"
       (openVisit)="modalState.openVisitDetail($event)"
@@ -53,6 +56,7 @@ export class CarePageComponent {
   private readonly router = inject(Router);
 
   readonly isCompletingVisit = signal(false);
+  readonly submitAttempted = signal(false);
 
   close(): void {
     this.careState.close();
@@ -61,6 +65,7 @@ export class CarePageComponent {
   }
 
   async completeCareVisit(): Promise<void> {
+    this.submitAttempted.set(true);
     const pet = this.modalState.selectedPet();
 
     if (!pet?.id) {
@@ -69,10 +74,11 @@ export class CarePageComponent {
     }
 
     const complaint = this.careState.complaint().trim();
+    const anamnesis = this.careState.anamnesis().trim();
     const treatment = this.careState.treatment().trim();
 
-    if (!complaint || !treatment) {
-      this.careState.setCompletionMessage('Preencha a queixa e o tratamento antes de salvar.');
+    if (!complaint || !anamnesis || !treatment) {
+      this.careState.setCompletionMessage('Preencha a queixa, a anamnese e o tratamento antes de salvar.');
       return;
     }
 
@@ -83,6 +89,7 @@ export class CarePageComponent {
         this.medicalRecordsApi.create({
           patientId: pet.id,
           complaint,
+          anamnesis,
           treatment,
           weightKg: this.careState.weightKg()
         })

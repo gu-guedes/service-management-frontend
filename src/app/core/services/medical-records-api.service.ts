@@ -8,6 +8,7 @@ export interface MedicalRecordResponseDTO {
   patientName: string;
   recordDate: string;
   complaint: string;
+  anamnesis: string;
   treatment: string;
   weightKg: number | null;
   createdAt: string;
@@ -16,6 +17,7 @@ export interface MedicalRecordResponseDTO {
 export interface MedicalRecordRequestDTO {
   patientId: number;
   complaint: string;
+  anamnesis: string;
   treatment: string;
   weightKg?: number | null;
 }

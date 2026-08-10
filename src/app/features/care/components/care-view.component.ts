@@ -51,7 +51,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           <section class="care-card">
             <div class="care-card-header">
               <h4>Novo atendimento</h4>
-              <p>Queixa, tratamento e peso do atendimento</p>
+              <p>Queixa, anamnese, tratamento e peso do atendimento</p>
             </div>
             <div class="wizard-form care-form">
               <label>
@@ -72,8 +72,25 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   rows="4"
                   placeholder="Motivo do atendimento — o que o tutor relatou"
                   [value]="complaint"
+                  [class.invalid]="submitAttempted && !complaint.trim()"
                   (input)="onComplaintInput($event)"
                 ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !complaint.trim()">
+                  Informe a queixa.
+                </span>
+              </label>
+              <label>
+                Anamnese <span class="req">*</span>
+                <textarea
+                  rows="4"
+                  placeholder="Historico clinico relatado pelo tutor"
+                  [value]="anamnesis"
+                  [class.invalid]="submitAttempted && !anamnesis.trim()"
+                  (input)="onAnamnesisInput($event)"
+                ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !anamnesis.trim()">
+                  Informe a anamnese.
+                </span>
               </label>
               <label>
                 Tratamento <span class="req">*</span>
@@ -81,8 +98,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   rows="4"
                   placeholder="Conduta, medicacao e orientacoes"
                   [value]="treatment"
+                  [class.invalid]="submitAttempted && !treatment.trim()"
                   (input)="onTreatmentInput($event)"
                 ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !treatment.trim()">
+                  Informe o tratamento.
+                </span>
               </label>
             </div>
             <button type="button" class="primary-btn" [disabled]="isCompletingVisit" (click)="complete.emit()">
@@ -113,14 +134,17 @@ export class CareViewComponent {
   @Input() weightKg: number | null = null;
   @Input() weightSuggestionLabel = '';
   @Input() complaint = '';
+  @Input() anamnesis = '';
   @Input() treatment = '';
   @Input() isCompletingVisit = false;
+  @Input() submitAttempted = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() complete = new EventEmitter<void>();
   @Output() openVisit = new EventEmitter<number>();
   @Output() weightKgChange = new EventEmitter<number | null>();
   @Output() complaintChange = new EventEmitter<string>();
+  @Output() anamnesisChange = new EventEmitter<string>();
   @Output() treatmentChange = new EventEmitter<string>();
 
   onWeightInput(event: Event): void {
@@ -130,6 +154,10 @@ export class CareViewComponent {
 
   onComplaintInput(event: Event): void {
     this.complaintChange.emit((event.target as HTMLTextAreaElement).value);
+  }
+
+  onAnamnesisInput(event: Event): void {
+    this.anamnesisChange.emit((event.target as HTMLTextAreaElement).value);
   }
 
   onTreatmentInput(event: Event): void {

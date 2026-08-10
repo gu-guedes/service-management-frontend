@@ -800,6 +800,14 @@ tbody tr:hover {
 	font-weight: 600;
 }
 
+// mesmo visual do ng-invalid.ng-touched acima, mas pra campos fora de Reactive Forms
+// (ex: atendimento, que usa @Input/@Output simples em vez de FormGroup)
+.wizard-form input.invalid,
+.wizard-form textarea.invalid {
+	border-color: #dc2626;
+	background: #fef2f2;
+}
+
 .care-view {
 	min-height: 100vh;
 	display: flex;

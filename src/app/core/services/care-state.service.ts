@@ -12,6 +12,7 @@ export class CareStateService {
   readonly completionMessage = signal('');
   readonly weightKg = signal<number | null>(null);
   readonly complaint = signal('');
+  readonly anamnesis = signal('');
   readonly treatment = signal('');
   readonly weightSuggestionLabel = signal('');
 
@@ -20,6 +21,7 @@ export class CareStateService {
     this.completionMessage.set('');
     this.weightKg.set(null);
     this.complaint.set('');
+    this.anamnesis.set('');
     this.treatment.set('');
     this.weightSuggestionLabel.set('');
   }
@@ -29,6 +31,7 @@ export class CareStateService {
     this.completionMessage.set('');
     this.weightKg.set(null);
     this.complaint.set('');
+    this.anamnesis.set('');
     this.treatment.set('');
     this.weightSuggestionLabel.set('');
   }
@@ -54,6 +57,10 @@ export class CareStateService {
 
   setComplaint(value: string): void {
     this.complaint.set(value);
+  }
+
+  setAnamnesis(value: string): void {
+    this.anamnesis.set(value);
   }
 
   setTreatment(value: string): void {

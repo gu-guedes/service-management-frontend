@@ -27,6 +27,11 @@ import { MedicalRecordResponseDTO } from '../../../core/services/medical-records
           </div>
 
           <div class="info-block">
+            <p class="label">Anamnese</p>
+            <p class="strong">{{ record.anamnesis }}</p>
+          </div>
+
+          <div class="info-block">
             <p class="label">Tratamento</p>
             <p class="strong">{{ record.treatment }}</p>
           </div>
