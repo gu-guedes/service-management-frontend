@@ -4,12 +4,13 @@ import { PetRecord } from '../../features/pets/models/pets.models';
 // -------------------------------------------------------------------
 // Serviço de estado do atendimento (prontuário)
 // Responsabilidade: os campos hoje persistidos na API real
-// (ver MedicalRecordsApiService) — peso, queixa e tratamento do atendimento
+// (ver MedicalRecordsApiService) — peso, queixa e tratamento do atendimento.
+// O feedback de sucesso/erro ao salvar e mostrado via toast (ver ToastService),
+// nao faz parte do estado do formulario.
 // -------------------------------------------------------------------
 @Injectable({ providedIn: 'root' })
 export class CareStateService {
   readonly isOpen = signal(false);
-  readonly completionMessage = signal('');
   readonly weightKg = signal<number | null>(null);
   readonly complaint = signal('');
   readonly anamnesis = signal('');
@@ -18,22 +19,12 @@ export class CareStateService {
 
   open(): void {
     this.isOpen.set(true);
-    this.completionMessage.set('');
-    this.weightKg.set(null);
-    this.complaint.set('');
-    this.anamnesis.set('');
-    this.treatment.set('');
-    this.weightSuggestionLabel.set('');
+    this.resetFields();
   }
 
   close(): void {
     this.isOpen.set(false);
-    this.completionMessage.set('');
-    this.weightKg.set(null);
-    this.complaint.set('');
-    this.anamnesis.set('');
-    this.treatment.set('');
-    this.weightSuggestionLabel.set('');
+    this.resetFields();
   }
 
   // abre o atendimento pra um pet especifico, ja sugerindo o peso (do ultimo
@@ -67,11 +58,19 @@ export class CareStateService {
     this.treatment.set(value);
   }
 
+  // limpa o formulario depois de salvar — sem isso, os campos continuavam
+  // preenchidos com os mesmos dados e o botao voltava habilitado, dando a
+  // impressao (pra quem nao reparasse no toast) de que nao tinha salvo,
+  // levando a reenviar o mesmo atendimento duplicado
   complete(): void {
-    this.completionMessage.set('Atendimento salvo com sucesso.');
+    this.resetFields();
   }
 
-  setCompletionMessage(message: string): void {
-    this.completionMessage.set(message);
+  private resetFields(): void {
+    this.weightKg.set(null);
+    this.complaint.set('');
+    this.anamnesis.set('');
+    this.treatment.set('');
+    this.weightSuggestionLabel.set('');
   }
 }

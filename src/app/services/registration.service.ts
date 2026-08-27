@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, delay, of, switchMap, map, throwError } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.development';
 
 interface TutorPayload {
   fullName: string;
   phone: string;
+  cpf: string;
   street: string;
   streetNumber: string;
   neighborhood: string;
@@ -26,6 +27,7 @@ interface PetPayload {
 interface CustomerRequestDTO {
   name: string;
   phone?: string;
+  cpf?: string;
   street: string;
   streetNumber: string;
   neighborhood: string;
@@ -37,6 +39,7 @@ interface CustomerResponseDTO {
   id: number;
   name: string;
   phone: string;
+  cpf: string | null;
   street: string | null;
   streetNumber: string | null;
   neighborhood: string | null;
@@ -86,6 +89,7 @@ export class RegistrationService {
       const customerPayload: CustomerRequestDTO = {
         name: payload.tutor.fullName,
         phone: this.toApiPhone(payload.tutor.phone),
+        cpf: this.toApiCpf(payload.tutor.cpf) || undefined,
         street: payload.tutor.street,
         streetNumber: payload.tutor.streetNumber,
         neighborhood: payload.tutor.neighborhood,
@@ -200,6 +204,10 @@ export class RegistrationService {
 
   private toApiPhone(phone: string): string {
     return phone.replace(/\D/g, '');
+  }
+
+  private toApiCpf(cpf: string): string {
+    return cpf.replace(/\D/g, '');
   }
 
   private toBrDate(dateTime: string): string {

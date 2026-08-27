@@ -165,6 +165,7 @@ export class AppComponent implements OnInit {
       id: String(customer.id),
       name: customer.name,
       phone: customer.phone || '--',
+      cpf: this.formatCpfForDisplay(customer.cpf),
       address: toAddressLabel(customer),
       initials: toInitials(customer.name),
       lastVisit: lastVisitIso ? toBrDateFromIso(lastVisitIso) : 'Sem atendimentos',
@@ -176,6 +177,14 @@ export class AppComponent implements OnInit {
         icon: this.petsState.getPetEmoji(toUiSpeciesFromApi(pet.species))
       }))
     };
+  }
+
+  // cpf fica salvo so em digitos na API — formata pra exibicao (000.000.000-00),
+  // igual ao que o formulario de cadastro/edicao ja mostra
+  private formatCpfForDisplay(cpf: string | null): string {
+    const digits = (cpf ?? '').replace(/\D/g, '');
+    if (digits.length !== 11) return '';
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
   }
 
   async logout(): Promise<void> {

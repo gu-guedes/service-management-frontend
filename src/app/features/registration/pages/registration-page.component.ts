@@ -9,6 +9,7 @@ import { TutorsStateService } from '../../../core/services/tutors-state.service'
 import { TutorRecord } from '../../tutors/models/tutors.models';
 import { RegistrationPetPayload, RegistrationScenario } from '../models/registration.models';
 import { toAddressLabel, toAgeLabel, toInitials } from '../../../shared/utils/pet-tutor-formatting';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-registration-page',
@@ -23,7 +24,6 @@ import { toAddressLabel, toAgeLabel, toInitials } from '../../../shared/utils/pe
       [petForm]="petForm"
       [tutorRecords]="tutorsState.records()"
       [selectedTutorForRegistration]="selectedTutorForRegistration"
-      [registrationError]="registrationError()"
       [isSubmittingRegistration]="isSubmittingRegistration()"
       (close)="close()"
       (scenarioChange)="setRegistrationScenario($event)"
@@ -41,15 +41,16 @@ export class RegistrationPageComponent implements OnInit {
   private readonly registrationService = inject(RegistrationService);
   readonly petsState = inject(PetsStateService);
   readonly tutorsState = inject(TutorsStateService);
+  private readonly toastService = inject(ToastService);
 
   readonly registrationStep = signal(1);
   readonly registrationScenario = signal<RegistrationScenario>('new');
-  readonly registrationError = signal('');
   readonly isSubmittingRegistration = signal(false);
 
   readonly tutorForm = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     phone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s?\d{4,5}-\d{4}$/)]],
+    cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
     street: ['', [Validators.required, Validators.minLength(2)]],
     streetNumber: ['', [Validators.required]],
     neighborhood: ['', [Validators.required, Validators.minLength(2)]],
@@ -76,9 +77,8 @@ export class RegistrationPageComponent implements OnInit {
     const scenarioParam = this.route.snapshot.queryParamMap.get('scenario');
     this.registrationScenario.set(scenarioParam === 'addpet' ? 'addpet' : 'new');
     this.registrationStep.set(1);
-    this.registrationError.set('');
 
-    this.tutorForm.reset({ fullName: '', phone: '', street: '', streetNumber: '', neighborhood: '', city: '', referencePoint: '' });
+    this.tutorForm.reset({ fullName: '', phone: '', cpf: '', street: '', streetNumber: '', neighborhood: '', city: '', referencePoint: '' });
     this.petForm.reset({ name: '', species: 'dog', breed: '', sex: 'M', age: null, weight: null, notes: '' });
     this.findTutorForm.reset({ tutorId: '' });
   }
@@ -97,12 +97,10 @@ export class RegistrationPageComponent implements OnInit {
     if (this.registrationScenario() === scenario) return;
     this.registrationScenario.set(scenario);
     this.registrationStep.set(1);
-    this.registrationError.set('');
     this.findTutorForm.reset({ tutorId: '' });
   }
 
   previousStep(): void {
-    this.registrationError.set('');
     if (this.registrationStep() > 1) {
       this.registrationStep.update((step) => step - 1);
     }
@@ -130,8 +128,6 @@ export class RegistrationPageComponent implements OnInit {
   async submit(): Promise<void> {
     if (this.isSubmittingRegistration()) return;
 
-    this.registrationError.set('');
-
     if (this.petForm.invalid) { this.petForm.markAllAsTouched(); return; }
     if (this.registrationScenario() === 'new' && this.tutorForm.invalid) { this.tutorForm.markAllAsTouched(); return; }
     if (this.registrationScenario() === 'addpet' && this.findTutorForm.invalid) { this.findTutorForm.markAllAsTouched(); return; }
@@ -148,6 +144,7 @@ export class RegistrationPageComponent implements OnInit {
             tutor: {
               fullName: tutorRaw.fullName ?? '',
               phone: tutorRaw.phone ?? '',
+              cpf: tutorRaw.cpf ?? '',
               street: tutorRaw.street ?? '',
               streetNumber: tutorRaw.streetNumber ?? '',
               neighborhood: tutorRaw.neighborhood ?? '',
@@ -166,6 +163,7 @@ export class RegistrationPageComponent implements OnInit {
           id: tutorId,
           name: response.tutor.fullName,
           phone: response.tutor.phone,
+          cpf: response.tutor.cpf ?? '',
           address: toAddressLabel(response.tutor),
           initials: tutorInitials,
           lastVisit: 'Sem atendimentos',
@@ -194,7 +192,7 @@ export class RegistrationPageComponent implements OnInit {
         const selectedTutor = this.selectedTutorForRegistration;
 
         if (!selectedTutor) {
-          this.registrationError.set('Selecione um tutor para continuar.');
+          this.toastService.error('Selecione um tutor para continuar.');
           return;
         }
 
@@ -226,10 +224,11 @@ export class RegistrationPageComponent implements OnInit {
       }
 
       this.petsState.setFilter('all');
+      this.toastService.success('Cadastro salvo com sucesso.');
       this.router.navigate(['/app/pets']);
 
     } catch {
-      this.registrationError.set('Nao foi possivel salvar agora. Tente novamente.');
+      this.toastService.error('Nao foi possivel salvar agora. Tente novamente.');
     } finally {
       this.isSubmittingRegistration.set(false);
     }

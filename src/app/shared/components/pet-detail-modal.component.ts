@@ -8,6 +8,8 @@ import { PetsStateService } from '../../core/services/pets-state.service';
 import { TutorsStateService } from '../../core/services/tutors-state.service';
 import { CareStateService } from '../../core/services/care-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+import { ToastService } from '../../core/services/toast.service';
 import {
   toAgeLabel,
   toApiSexFromCode,
@@ -54,8 +56,6 @@ import {
               <button type="button" class="primary-btn" (click)="openCareViewFromPet()">+ Atendimento</button>
             </div>
           </div>
-
-          <p class="error-message" *ngIf="editError()">{{ editError() }}</p>
 
           <!-- Formulario de edicao do pet -->
           <form *ngIf="editingPet()" [formGroup]="editPetForm" class="wizard-form">
@@ -178,9 +178,10 @@ export class PetDetailModalComponent {
   private readonly tutorsState = inject(TutorsStateService);
   private readonly careState = inject(CareStateService);
   readonly modalState = inject(ModalStateService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly toastService = inject(ToastService);
 
   readonly editingPet = signal(false);
-  readonly editError = signal('');
   readonly isSavingEdit = signal(false);
   // customerId do pet em edição — precisa ser reenviado no PUT, mas não faz parte do form
   private editingPetCustomerId: number | null = null;
@@ -199,7 +200,6 @@ export class PetDetailModalComponent {
   close(): void {
     this.modalState.close();
     this.editingPet.set(false);
-    this.editError.set('');
   }
 
   openCareViewFromPet(): void {
@@ -239,8 +239,6 @@ export class PetDetailModalComponent {
     const pet = this.modalState.selectedPet();
     if (!pet?.id) return;
 
-    this.editError.set('');
-
     try {
       const patient = await firstValueFrom(this.directoryApi.getPatientById(pet.id));
       this.editingPetCustomerId = patient.customerId;
@@ -255,13 +253,12 @@ export class PetDetailModalComponent {
       });
       this.editingPet.set(true);
     } catch {
-      this.editError.set('Nao foi possivel carregar os dados do pet.');
+      this.toastService.error('Nao foi possivel carregar os dados do pet.');
     }
   }
 
   cancelEditPet(): void {
     this.editingPet.set(false);
-    this.editError.set('');
   }
 
   async saveEditPet(): Promise<void> {
@@ -276,7 +273,6 @@ export class PetDetailModalComponent {
     }
 
     this.isSavingEdit.set(true);
-    this.editError.set('');
     const raw = this.editPetForm.getRawValue();
 
     try {
@@ -307,8 +303,9 @@ export class PetDetailModalComponent {
       }
 
       this.editingPet.set(false);
+      this.toastService.success('Pet atualizado com sucesso.');
     } catch {
-      this.editError.set('Nao foi possivel salvar as alteracoes do pet.');
+      this.toastService.error('Nao foi possivel salvar as alteracoes do pet.');
     } finally {
       this.isSavingEdit.set(false);
     }
@@ -320,18 +317,24 @@ export class PetDetailModalComponent {
     const pet = this.modalState.selectedPet();
     if (!pet?.id) return;
 
-    if (!confirm(`Excluir ${pet.name}? Ele vai sumir da lista de pets e nao pode ser recuperado por aqui.`)) return;
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Excluir pet',
+      message: `Excluir ${pet.name}? Ele vai sumir da lista de pets e nao pode ser recuperado por aqui.`,
+      confirmLabel: 'Excluir',
+      danger: true
+    });
+    if (!confirmed) return;
 
     this.isSavingEdit.set(true);
-    this.editError.set('');
 
     try {
       await firstValueFrom(this.directoryApi.deletePatient(pet.id));
       this.petsState.removeRecord(pet.id);
       this.tutorsState.removePet(pet.id);
       this.close();
+      this.toastService.success('Pet excluido com sucesso.');
     } catch {
-      this.editError.set('Nao foi possivel excluir o pet agora.');
+      this.toastService.error('Nao foi possivel excluir o pet agora.');
     } finally {
       this.isSavingEdit.set(false);
     }
