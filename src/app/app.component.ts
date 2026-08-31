@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation, computed, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -9,11 +9,19 @@ import { PetsStateService } from './core/services/pets-state.service';
 import { TutorsStateService } from './core/services/tutors-state.service';
 import { DirectoryApiService, CustomerResponseDTO, PatientResponseDTO } from './core/services/directory-api.service';
 import { MedicalRecordsApiService } from './core/services/medical-records-api.service';
+import { MedicalRecordsStateService } from './core/services/medical-records-state.service';
+import { ProductApplicationsApiService } from './core/services/product-applications-api.service';
+import { ProductApplicationsStateService } from './core/services/product-applications-state.service';
+import { ExamRequestsApiService } from './core/services/exam-requests-api.service';
+import { ExamRequestsStateService } from './core/services/exam-requests-state.service';
+import { MedicalRecordImagesApiService } from './core/services/medical-record-images-api.service';
+import { MedicalRecordImagesStateService } from './core/services/medical-record-images-state.service';
 import { PetRecord } from './features/pets/models/pets.models';
 import { TutorRecord } from './features/tutors/models/tutors.models';
 import { PetDetailModalComponent } from './shared/components/pet-detail-modal.component';
 import { TutorDetailModalComponent } from './shared/components/tutor-detail-modal.component';
 import { QuickRegistrationModalComponent } from './shared/components/quick-registration-modal.component';
+import { ProductApplicationModalComponent } from './shared/components/product-application-modal.component';
 import {
   toAddressLabel,
   toAgeLabel,
@@ -45,7 +53,8 @@ interface NavItem {
     RouterLinkActive,
     PetDetailModalComponent,
     TutorDetailModalComponent,
-    QuickRegistrationModalComponent
+    QuickRegistrationModalComponent,
+    ProductApplicationModalComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -56,9 +65,16 @@ export class AppComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly directoryApi = inject(DirectoryApiService);
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
+  private readonly productApplicationsApi = inject(ProductApplicationsApiService);
+  private readonly examRequestsApi = inject(ExamRequestsApiService);
+  private readonly medicalRecordImagesApi = inject(MedicalRecordImagesApiService);
 
   readonly petsState = inject(PetsStateService);
   readonly tutorsState = inject(TutorsStateService);
+  private readonly medicalRecordsState = inject(MedicalRecordsStateService);
+  private readonly productApplicationsState = inject(ProductApplicationsStateService);
+  private readonly examRequestsState = inject(ExamRequestsStateService);
+  private readonly medicalRecordImagesState = inject(MedicalRecordImagesStateService);
 
   // paginas de atendimento e cadastro sao tela cheia — sem sidebar/topbar/tabs
   private readonly currentUrl = toSignal(
@@ -75,9 +91,21 @@ export class AppComponent implements OnInit {
   });
 
   readonly navItems: NavItem[] = [
+    { label: 'Avisos', icon: '🔔', route: '/app/dashboard' },
     { label: 'Fichas de Pets', icon: '🐾', route: '/app/pets' },
     { label: 'Tutores', icon: '👥', route: '/app/tutors' }
   ];
+
+  // sidebar vira um painel deslizante nesse breakpoint (ver app.component.scss) — fechado por padrao
+  readonly isMobileMenuOpen = signal(false);
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update((open) => !open);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
 
   // ----------------------------------------------------------------
   // Carrega tutores e pets reais da API ao abrir o app
@@ -90,11 +118,19 @@ export class AppComponent implements OnInit {
     forkJoin({
       customers: this.directoryApi.getCustomers(),
       patients: this.directoryApi.getPatients(),
-      medicalRecords: this.medicalRecordsApi.getAll()
+      medicalRecords: this.medicalRecordsApi.getAll(),
+      productApplications: this.productApplicationsApi.getAll(),
+      examRequests: this.examRequestsApi.getAll(),
+      medicalRecordImages: this.medicalRecordImagesApi.getAll()
     }).subscribe({
-      next: ({ customers, patients, medicalRecords }) => {
+      next: ({ customers, patients, medicalRecords, productApplications, examRequests, medicalRecordImages }) => {
         const customerNameById = new Map(customers.map((c) => [c.id, c.name]));
         const lastVisitByPatientId = this.toLastVisitMap(medicalRecords);
+
+        this.medicalRecordsState.replaceAll(medicalRecords);
+        this.productApplicationsState.replaceAll(productApplications);
+        this.examRequestsState.replaceAll(examRequests);
+        this.medicalRecordImagesState.replaceAll(medicalRecordImages);
 
         this.petsState.replaceAll(
           patients.map((patient) =>
@@ -170,6 +206,7 @@ export class AppComponent implements OnInit {
       initials: toInitials(customer.name),
       lastVisit: lastVisitIso ? toBrDateFromIso(lastVisitIso) : 'Sem atendimentos',
       registeredAt: toBrDateFromIso(customer.createdAt),
+      birthDate: customer.birthDate,
       pets: pets.map((pet) => ({
         id: pet.id,
         name: pet.name,

@@ -11,6 +11,9 @@ export interface MedicalRecordResponseDTO {
   anamnesis: string;
   treatment: string;
   weightKg: number | null;
+  // formato yyyy-MM-dd (sem hora) — opcional, so quando o vet quer lembrete de retorno
+  followUpDate: string | null;
+  followUpDone: boolean;
   createdAt: string;
 }
 
@@ -20,6 +23,8 @@ export interface MedicalRecordRequestDTO {
   anamnesis: string;
   treatment: string;
   weightKg?: number | null;
+  followUpDate?: string | null;
+  followUpDone?: boolean;
 }
 
 // -------------------------------------------------------------------

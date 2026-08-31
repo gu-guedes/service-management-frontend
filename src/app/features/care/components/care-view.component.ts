@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { PendingImage } from '../../../core/services/care-state.service';
+import { compressImage } from '../../../shared/utils/image-compression';
 
 @Component({
   selector: 'app-care-view',
@@ -67,19 +69,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <span class="sub" *ngIf="weightSuggestionLabel">{{ weightSuggestionLabel }} — confirme ou ajuste.</span>
               </label>
               <label>
-                Queixa <span class="req">*</span>
-                <textarea
-                  rows="4"
-                  placeholder="Motivo do atendimento — o que o tutor relatou"
-                  [value]="complaint"
-                  [class.invalid]="submitAttempted && !complaint.trim()"
-                  (input)="onComplaintInput($event)"
-                ></textarea>
-                <span class="field-error" *ngIf="submitAttempted && !complaint.trim()">
-                  Informe a queixa.
-                </span>
-              </label>
-              <label>
                 Anamnese <span class="req">*</span>
                 <textarea
                   rows="4"
@@ -90,6 +79,19 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 ></textarea>
                 <span class="field-error" *ngIf="submitAttempted && !anamnesis.trim()">
                   Informe a anamnese.
+                </span>
+              </label>
+              <label>
+                Queixa <span class="req">*</span>
+                <textarea
+                  rows="4"
+                  placeholder="Motivo do atendimento — o que o tutor relatou"
+                  [value]="complaint"
+                  [class.invalid]="submitAttempted && !complaint.trim()"
+                  (input)="onComplaintInput($event)"
+                ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !complaint.trim()">
+                  Informe a queixa.
                 </span>
               </label>
               <label>
@@ -104,6 +106,41 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <span class="field-error" *ngIf="submitAttempted && !treatment.trim()">
                   Informe o tratamento.
                 </span>
+              </label>
+              <label>
+                Lembrar de retorno em
+                <input type="date" [value]="followUpDate ?? ''" (input)="onFollowUpDateInput($event)" />
+                <span class="sub">Opcional — ex: avisar o tutor apos o fim de um tratamento.</span>
+              </label>
+              <label>
+                Exames solicitados
+                <div class="exam-input-row">
+                  <input
+                    type="text"
+                    #examInput
+                    placeholder="Ex: Hemograma completo"
+                    (keydown.enter)="$event.preventDefault(); addExam(examInput)"
+                  />
+                  <button type="button" class="ghost-btn" (click)="addExam(examInput)">+ Adicionar</button>
+                </div>
+                <div class="pets-inline compact" *ngIf="pendingExamNames.length">
+                  <span class="pet-chip" *ngFor="let name of pendingExamNames; let i = index">
+                    <span class="strong">{{ name }}</span>
+                    <button type="button" class="chip-remove" (click)="removeExam.emit(i)">×</button>
+                  </span>
+                </div>
+                <span class="sub">Opcional — resultado (PDF) pode ser anexado depois, no detalhe do atendimento.</span>
+              </label>
+              <label>
+                Fotos
+                <input type="file" accept="image/*" multiple (change)="onImagesSelected($event)" />
+                <div class="photo-thumbs" *ngIf="pendingImages.length">
+                  <div class="photo-thumb" *ngFor="let img of pendingImages; let i = index">
+                    <img [src]="img.previewUrl" alt="Previa da foto anexada" />
+                    <button type="button" class="chip-remove" (click)="removeImage.emit(i)">×</button>
+                  </div>
+                </div>
+                <span class="sub">Opcional — tambem pode ser anexado depois, no detalhe do atendimento.</span>
               </label>
             </div>
             <button type="button" class="primary-btn" [disabled]="isCompletingVisit" (click)="complete.emit()">
@@ -134,6 +171,9 @@ export class CareViewComponent {
   @Input() complaint = '';
   @Input() anamnesis = '';
   @Input() treatment = '';
+  @Input() followUpDate: string | null = null;
+  @Input() pendingExamNames: string[] = [];
+  @Input() pendingImages: PendingImage[] = [];
   @Input() isCompletingVisit = false;
   @Input() submitAttempted = false;
 
@@ -144,6 +184,11 @@ export class CareViewComponent {
   @Output() complaintChange = new EventEmitter<string>();
   @Output() anamnesisChange = new EventEmitter<string>();
   @Output() treatmentChange = new EventEmitter<string>();
+  @Output() followUpDateChange = new EventEmitter<string | null>();
+  @Output() addExamName = new EventEmitter<string>();
+  @Output() removeExam = new EventEmitter<number>();
+  @Output() addImage = new EventEmitter<File>();
+  @Output() removeImage = new EventEmitter<number>();
 
   onWeightInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
@@ -160,5 +205,28 @@ export class CareViewComponent {
 
   onTreatmentInput(event: Event): void {
     this.treatmentChange.emit((event.target as HTMLTextAreaElement).value);
+  }
+
+  onFollowUpDateInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.followUpDateChange.emit(raw || null);
+  }
+
+  addExam(input: HTMLInputElement): void {
+    const name = input.value.trim();
+    if (!name) return;
+    this.addExamName.emit(name);
+    input.value = '';
+  }
+
+  async onImagesSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+
+    for (const file of files) {
+      const compressed = await compressImage(file);
+      this.addImage.emit(compressed);
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
   selector: 'app-registration-view',
@@ -85,6 +86,13 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
               />
               <span class="field-error" *ngIf="tutorForm.controls['cpf'].invalid && tutorForm.controls['cpf'].touched">
                 Informe o CPF no formato 000.000.000-00.
+              </span>
+            </label>
+            <label>
+              Data de nascimento <span class="req">*</span>
+              <input type="date" formControlName="birthDate" />
+              <span class="field-error" *ngIf="tutorForm.controls['birthDate'].invalid && tutorForm.controls['birthDate'].touched">
+                Informe a data de nascimento.
               </span>
             </label>
             <p class="fsec-title">Endereco</p>
@@ -229,6 +237,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
               <p class="strong">{{ tutorForm.controls['fullName'].value }}</p>
               <p class="sub">{{ tutorForm.controls['phone'].value }}</p>
               <p class="sub">{{ tutorAddressPreview }}</p>
+              <p class="sub">Nascimento: {{ tutorBirthDatePreview }}</p>
             </div>
             <div class="info-block" *ngIf="registrationScenario === 'addpet' && selectedTutorForRegistration">
               <p class="label">Tutor selecionado</p>
@@ -286,6 +295,10 @@ export class RegistrationViewComponent {
     const reference = raw.referencePoint ? ` (Ref.: ${raw.referencePoint})` : '';
 
     return (main || 'Endereco nao informado') + reference;
+  }
+
+  get tutorBirthDatePreview(): string {
+    return toBrDateFromDateOnly(this.tutorForm.controls['birthDate'].value);
   }
 
   get petSpeciesLabel(): string {

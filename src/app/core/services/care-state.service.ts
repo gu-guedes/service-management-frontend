@@ -1,6 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { PetRecord } from '../../features/pets/models/pets.models';
 
+// previewUrl e gerado uma unica vez (URL.createObjectURL) e revogado ao remover/resetar —
+// gerar isso no template a cada change detection vazaria memoria
+export interface PendingImage {
+  file: File;
+  previewUrl: string;
+}
+
 // -------------------------------------------------------------------
 // Serviço de estado do atendimento (prontuário)
 // Responsabilidade: os campos hoje persistidos na API real
@@ -16,15 +23,28 @@ export class CareStateService {
   readonly anamnesis = signal('');
   readonly treatment = signal('');
   readonly weightSuggestionLabel = signal('');
+  // opcional — data (yyyy-MM-dd) pra lembrar de avisar o tutor apos o atendimento
+  readonly followUpDate = signal<string | null>(null);
+  // exames sendo adicionados nesse atendimento em andamento — so viram ExamRequest de
+  // verdade depois de salvar (precisam do id do atendimento, que ainda nao existe aqui)
+  readonly pendingExamNames = signal<string[]>([]);
+  // fotos ja comprimidas, aguardando o atendimento ser salvo pra saber o medicalRecordId
+  readonly pendingImages = signal<PendingImage[]>([]);
 
   open(): void {
     this.isOpen.set(true);
     this.resetFields();
+    this.followUpDate.set(null);
+    this.pendingExamNames.set([]);
+    this.clearPendingImages();
   }
 
   close(): void {
     this.isOpen.set(false);
     this.resetFields();
+    this.followUpDate.set(null);
+    this.pendingExamNames.set([]);
+    this.clearPendingImages();
   }
 
   // abre o atendimento pra um pet especifico, ja sugerindo o peso (do ultimo
@@ -56,6 +76,38 @@ export class CareStateService {
 
   setTreatment(value: string): void {
     this.treatment.set(value);
+  }
+
+  setFollowUpDate(value: string | null): void {
+    this.followUpDate.set(value || null);
+  }
+
+  addPendingExamName(name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    this.pendingExamNames.update((names) => [...names, trimmed]);
+  }
+
+  removePendingExamName(index: number): void {
+    this.pendingExamNames.update((names) => names.filter((_, i) => i !== index));
+  }
+
+  addPendingImage(file: File): void {
+    const previewUrl = URL.createObjectURL(file);
+    this.pendingImages.update((images) => [...images, { file, previewUrl }]);
+  }
+
+  removePendingImage(index: number): void {
+    this.pendingImages.update((images) => {
+      const removed = images[index];
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return images.filter((_, i) => i !== index);
+    });
+  }
+
+  private clearPendingImages(): void {
+    this.pendingImages().forEach((img) => URL.revokeObjectURL(img.previewUrl));
+    this.pendingImages.set([]);
   }
 
   // limpa o formulario depois de salvar — sem isso, os campos continuavam

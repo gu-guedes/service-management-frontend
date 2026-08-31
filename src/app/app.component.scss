@@ -113,6 +113,9 @@
 	flex-direction: column;
 	padding: 1.5rem;
 	gap: 1rem;
+	// item de grid do .layout-shell — sem isso o item nao encolhe abaixo da largura
+	// minima intrinseca do conteudo (ex: uma tabela larga), estourando a pagina
+	min-width: 0;
 }
 
 .main-content.full-screen {
@@ -130,6 +133,28 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
+}
+
+// escondido no desktop — vira visivel dentro do breakpoint de 1080px (ver abaixo)
+.hamburger-btn {
+	display: none;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	border-radius: 0.6rem;
+	font-size: 1.1rem;
+	line-height: 1;
+	padding: 0.5rem 0.7rem;
+	cursor: pointer;
+}
+
+// so faz sentido junto com a sidebar-overlay do breakpoint de 1080px — evita
+// cobrir a tela em desktop se a janela for redimensionada com o menu aberto
+.sidebar-backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	z-index: 30;
 }
 
 .topbar h1 {
@@ -273,6 +298,13 @@
 	overflow: hidden;
 }
 
+// regiao de scroll propria pra tabelas largas — o .card acima corta (overflow:hidden),
+// entao a tabela precisa do seu proprio scroll horizontal em vez de estourar a pagina
+.table-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
 .card-header {
 	padding: 0.9rem 1rem;
 	border-bottom: 1px solid var(--border);
@@ -375,6 +407,67 @@
 	border-color: var(--accent);
 	background: var(--accent);
 	color: #fff;
+}
+
+// grade de cards da pagina de Avisos — lado a lado em vez de empilhados,
+// cada card so tao alto quanto o proprio conteudo (align-items: start)
+.avisos-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.75rem;
+	align-items: start;
+}
+
+.avisos-grid .due-followups-card {
+	min-width: 0;
+}
+
+// versao compacta dos textos/espacamentos so dentro da grade de Avisos —
+// com 4 colunas o card fica bem mais estreito que o uso normal de .card-header
+.avisos-grid .card-header {
+	padding: 0.7rem 0.8rem;
+}
+
+.avisos-grid .card-header h3 {
+	font-size: 0.85rem;
+}
+
+.avisos-grid .card-header p {
+	font-size: 0.68rem;
+}
+
+.due-followups-card .card-header {
+	background: #fff7ed;
+	border-bottom-color: #fdba74;
+}
+
+.due-followups-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.due-followup-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.75rem 1rem;
+	border-top: 1px solid var(--border);
+}
+
+.avisos-grid .due-followup-item {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.5rem;
+	padding: 0.6rem 0.8rem;
+}
+
+.avisos-grid .due-followup-item .ghost-btn {
+	width: 100%;
+}
+
+.due-followup-item:first-child {
+	border-top: none;
 }
 
 .pet-cell {
@@ -483,6 +576,72 @@ tbody tr:hover {
 
 .pets-inline.compact {
 	padding: 0;
+}
+
+// campo de texto + botao "+ Adicionar" pra montar a lista de exames antes de salvar o atendimento
+.exam-input-row {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.exam-input-row input {
+	flex: 1;
+}
+
+.chip-remove {
+	border: 0;
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 0.9rem;
+	line-height: 1;
+	padding: 0;
+}
+
+.chip-remove:hover {
+	color: var(--text);
+}
+
+// miniaturas das fotos anexadas (atendimento em andamento e detalhe do atendimento)
+.photo-thumbs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	margin-top: 0.5rem;
+}
+
+.photo-thumb {
+	position: relative;
+	width: 84px;
+	height: 84px;
+	border-radius: 0.6rem;
+	overflow: hidden;
+	border: 1px solid var(--border);
+	cursor: pointer;
+}
+
+.photo-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.photo-thumb .chip-remove {
+	position: absolute;
+	top: 2px;
+	right: 4px;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.5);
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	font-size: 0.85rem;
+}
+
+.photo-thumb .chip-remove:hover {
+	background: rgba(0, 0, 0, 0.75);
+	color: #fff;
 }
 
 .pet-cell.between {
@@ -794,18 +953,18 @@ tbody tr:hover {
 	border-color: #dc2626;
 }
 
-.field-error {
-	font-size: 0.75rem;
-	color: #dc2626;
-	font-weight: 600;
-}
-
 // mesmo visual do ng-invalid.ng-touched acima, mas pra campos fora de Reactive Forms
 // (ex: atendimento, que usa @Input/@Output simples em vez de FormGroup)
 .wizard-form input.invalid,
 .wizard-form textarea.invalid {
 	border-color: #dc2626;
 	background: #fef2f2;
+}
+
+.field-error {
+	font-size: 0.75rem;
+	color: #dc2626;
+	font-weight: 600;
 }
 
 .care-view {
@@ -1590,13 +1749,30 @@ tbody tr:hover {
 		grid-template-columns: 1fr;
 	}
 
-	.sidebar {
-		min-height: auto;
+	.hamburger-btn {
+		display: inline-flex;
 	}
 
-	.main-nav {
-		flex-direction: row;
-		flex-wrap: wrap;
+	// sidebar vira um painel deslizante (menu hamburguer), fechado por padrao —
+	// tirada do fluxo do grid (position:fixed), por isso .layout-shell so precisa de 1 coluna
+	.sidebar {
+		position: fixed;
+		inset: 0 auto 0 0;
+		width: 240px;
+		max-width: 85vw;
+		min-height: 100vh;
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+		z-index: 40;
+		overflow-y: auto;
+	}
+
+	.sidebar.mobile-open {
+		transform: translateX(0);
+	}
+
+	.sidebar-backdrop {
+		display: block;
 	}
 
 	.content-grid {
@@ -1604,6 +1780,10 @@ tbody tr:hover {
 	}
 
 	.stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.avisos-grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
@@ -1629,6 +1809,19 @@ tbody tr:hover {
 
 	.quick-actions {
 		grid-template-columns: 1fr;
+	}
+
+	.avisos-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.due-followup-item {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.due-followup-item .ghost-btn {
+		width: 100%;
 	}
 
 	.pets-header {
@@ -1699,5 +1892,27 @@ tbody tr:hover {
 	.prog-sidebar {
 		border-right: 0;
 		border-bottom: 1px solid var(--border);
+	}
+
+	// alvos de toque maiores — desktop fica como esta, isso so vale no mobile
+	.primary-btn,
+	.ghost-btn {
+		padding: 0.75rem 1rem;
+		font-size: 0.85rem;
+	}
+
+	.filter-chip {
+		padding: 0.5rem 0.85rem;
+	}
+
+	.wizard-form input,
+	.wizard-form select,
+	.wizard-form textarea {
+		padding: 0.7rem 0.75rem;
+	}
+
+	.check-btn {
+		width: 32px;
+		height: 32px;
 	}
 }

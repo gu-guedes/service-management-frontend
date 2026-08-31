@@ -8,14 +8,17 @@ import { PetsStateService } from '../../core/services/pets-state.service';
 import { TutorsStateService } from '../../core/services/tutors-state.service';
 import { CareStateService } from '../../core/services/care-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
+import { ProductApplicationsStateService } from '../../core/services/product-applications-state.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import {
   toAgeLabel,
   toApiSexFromCode,
+  toBrDateFromDateOnly,
   toFormSex,
   toSexLabel,
   toSpeciesLabel,
+  toTodayIso,
   toUiSpeciesFromApi
 } from '../utils/pet-tutor-formatting';
 
@@ -164,6 +167,24 @@ import {
                 <p class="sub">Sem historico registrado para este pet.</p>
               </ng-template>
             </div>
+
+            <div class="info-block">
+              <p class="label">Produtos aplicados</p>
+              <div class="timeline" *ngIf="petProductApplications(pet.id).length; else noProducts">
+                <div class="timeline-item" *ngFor="let product of petProductApplications(pet.id)">
+                  <p class="sub">
+                    Aplicado em {{ formatDateOnly(product.appliedDate) }}
+                    <span class="badge" [ngClass]="isProductExpired(product.expiresAt) ? 'is-orange' : 'is-green'">
+                      {{ isProductExpired(product.expiresAt) ? 'Vencido' : 'Valido ate ' + formatDateOnly(product.expiresAt) }}
+                    </span>
+                  </p>
+                  <p class="strong">{{ product.productName }}</p>
+                </div>
+              </div>
+              <ng-template #noProducts>
+                <p class="sub">Nenhum produto registrado para este pet.</p>
+              </ng-template>
+            </div>
           </ng-container>
         </div>
       </article>
@@ -177,6 +198,7 @@ export class PetDetailModalComponent {
   private readonly petsState = inject(PetsStateService);
   private readonly tutorsState = inject(TutorsStateService);
   private readonly careState = inject(CareStateService);
+  private readonly productApplicationsState = inject(ProductApplicationsStateService);
   readonly modalState = inject(ModalStateService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly toastService = inject(ToastService);
@@ -195,6 +217,18 @@ export class PetDetailModalComponent {
     weight: [null as number | null, [Validators.required, Validators.min(0.1), Validators.max(120)]],
     notes: ['', Validators.required]
   });
+
+  petProductApplications(petId: number | null) {
+    return petId !== null ? this.productApplicationsState.findByPatientId(petId) : [];
+  }
+
+  formatDateOnly(dateOnlyIso: string | null): string {
+    return toBrDateFromDateOnly(dateOnlyIso);
+  }
+
+  isProductExpired(expiresAt: string): boolean {
+    return expiresAt < toTodayIso();
+  }
 
   // fecha a ficha e descarta qualquer edicao em andamento
   close(): void {

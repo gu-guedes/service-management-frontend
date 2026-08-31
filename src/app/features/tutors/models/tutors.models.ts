@@ -15,5 +15,7 @@ export interface TutorRecord {
   initials: string;
   lastVisit: string;
   registeredAt: string;
+  // formato ISO (yyyy-MM-dd), como vem do backend — sem hora, evita bug de fuso na comparacao de aniversario
+  birthDate: string | null;
   pets: TutorPet[];
 }

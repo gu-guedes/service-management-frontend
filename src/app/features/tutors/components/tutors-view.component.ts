@@ -15,6 +15,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           </div>
         </header>
 
+        <div class="table-scroll">
         <table>
           <thead>
             <tr>
@@ -32,7 +33,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   <div class="pet-cell">
                     <span class="tutor-avatar">{{ tutor.initials }}</span>
                     <div>
-                      <p class="strong">{{ tutor.name }}</p>
+                      <p class="strong">
+                        {{ tutor.name }}
+                        <span *ngIf="birthdayTodayIds.has(tutor.id)" title="Aniversario hoje">🎂</span>
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -70,6 +74,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             </ng-container>
           </tbody>
         </table>
+        </div>
       </article>
     </section>
   `
@@ -85,6 +90,7 @@ export class TutorsViewComponent {
   }> = [];
 
   @Input() expandedTutorId: string | null = null;
+  @Input() birthdayTodayIds: Set<string> = new Set();
 
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
