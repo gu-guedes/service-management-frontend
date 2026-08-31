@@ -7,6 +7,7 @@ export interface CustomerResponseDTO {
   name: string;
   email: string | null;
   phone: string;
+  cpf: string | null;
   street: string | null;
   streetNumber: string | null;
   neighborhood: string | null;
@@ -21,6 +22,7 @@ export interface CustomerRequestDTO {
   name: string;
   email?: string;
   phone?: string;
+  cpf?: string;
   street: string;
   streetNumber: string;
   neighborhood: string;

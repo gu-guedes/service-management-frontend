@@ -146,7 +146,6 @@ import { compressImage } from '../../../shared/utils/image-compression';
             <button type="button" class="primary-btn" [disabled]="isCompletingVisit" (click)="complete.emit()">
               {{ isCompletingVisit ? 'Salvando...' : 'Salvar atendimento' }}
             </button>
-            <p class="sub" *ngIf="careCompletionMessage">{{ careCompletionMessage }}</p>
           </section>
         </main>
       </div>
@@ -167,7 +166,6 @@ export class CareViewComponent {
   @Input() selectedTutorRecord: { name: string; phone: string } | null = null;
   @Input() selectedPetTimeline: Array<{ id: number; title: string; date: string; time: string; description: string }> = [];
   @Input() selectedPetEmoji = '🐾';
-  @Input() careCompletionMessage = '';
   @Input() weightKg: number | null = null;
   @Input() weightSuggestionLabel = '';
   @Input() complaint = '';

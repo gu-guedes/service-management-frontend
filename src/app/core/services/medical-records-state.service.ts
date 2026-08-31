@@ -46,4 +46,8 @@ export class MedicalRecordsStateService {
   updateRecord(id: number, patch: Partial<MedicalRecordResponseDTO>): void {
     this._records.update((records) => records.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }
+
+  removeRecord(id: number): void {
+    this._records.update((records) => records.filter((r) => r.id !== id));
+  }
 }

@@ -6,6 +6,8 @@ import { ModalStateService } from '../../core/services/modal-state.service';
 import { TutorsStateService } from '../../core/services/tutors-state.service';
 import { PetsStateService } from '../../core/services/pets-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+import { ToastService } from '../../core/services/toast.service';
 import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatting';
 
 // -------------------------------------------------------------------
@@ -37,8 +39,6 @@ import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatt
         </header>
 
         <div class="modal-body">
-          <p class="error-message" *ngIf="editError()">{{ editError() }}</p>
-
           <!-- Formulario de edicao do tutor -->
           <form *ngIf="editingTutor()" [formGroup]="editTutorForm" class="wizard-form">
             <label>
@@ -59,6 +59,19 @@ import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatt
               />
               <span class="field-error" *ngIf="editTutorForm.controls['phone'].invalid && editTutorForm.controls['phone'].touched">
                 Use o formato (11) 99999-9999.
+              </span>
+            </label>
+            <label>
+              CPF
+              <input
+                type="text"
+                formControlName="cpf"
+                placeholder="000.000.000-00"
+                maxlength="14"
+                (input)="onEditTutorCpfInput($event)"
+              />
+              <span class="field-error" *ngIf="editTutorForm.controls['cpf'].invalid && editTutorForm.controls['cpf'].touched">
+                Use o formato 000.000.000-00.
               </span>
             </label>
             <div class="grid-2-col">
@@ -122,6 +135,10 @@ import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatt
                 <p class="label">Contato</p>
                 <p class="strong">{{ tutor.phone }}</p>
               </div>
+              <div *ngIf="tutor.cpf">
+                <p class="label">CPF</p>
+                <p class="strong">{{ tutor.cpf }}</p>
+              </div>
               <div>
                 <p class="label">Endereco</p>
                 <p class="strong">{{ tutor.address }}</p>
@@ -170,14 +187,16 @@ export class TutorDetailModalComponent {
   private readonly tutorsState = inject(TutorsStateService);
   private readonly petsState = inject(PetsStateService);
   readonly modalState = inject(ModalStateService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly toastService = inject(ToastService);
 
   readonly editingTutor = signal(false);
-  readonly editError = signal('');
   readonly isSavingEdit = signal(false);
 
   readonly editTutorForm = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     phone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s?\d{4,5}-\d{4}$/)]],
+    cpf: ['', [Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
     street: ['', [Validators.required, Validators.minLength(2)]],
     streetNumber: ['', [Validators.required]],
     neighborhood: ['', [Validators.required, Validators.minLength(2)]],
@@ -189,7 +208,6 @@ export class TutorDetailModalComponent {
   close(): void {
     this.modalState.close();
     this.editingTutor.set(false);
-    this.editError.set('');
   }
 
   birthDateLabel(birthDate: string): string {
@@ -204,13 +222,12 @@ export class TutorDetailModalComponent {
     const tutor = this.modalState.selectedTutor();
     if (!tutor) return;
 
-    this.editError.set('');
-
     try {
       const customer = await firstValueFrom(this.directoryApi.getCustomerById(Number(tutor.id)));
       this.editTutorForm.reset({
         fullName: customer.name,
         phone: customer.phone ?? '',
+        cpf: this.formatCpf(customer.cpf ?? ''),
         street: customer.street ?? '',
         streetNumber: customer.streetNumber ?? '',
         neighborhood: customer.neighborhood ?? '',
@@ -220,13 +237,12 @@ export class TutorDetailModalComponent {
       });
       this.editingTutor.set(true);
     } catch {
-      this.editError.set('Nao foi possivel carregar os dados do tutor.');
+      this.toastService.error('Nao foi possivel carregar os dados do tutor.');
     }
   }
 
   cancelEditTutor(): void {
     this.editingTutor.set(false);
-    this.editError.set('');
   }
 
   async saveEditTutor(): Promise<void> {
@@ -241,7 +257,6 @@ export class TutorDetailModalComponent {
     }
 
     this.isSavingEdit.set(true);
-    this.editError.set('');
     const raw = this.editTutorForm.getRawValue();
 
     try {
@@ -249,6 +264,7 @@ export class TutorDetailModalComponent {
         this.directoryApi.updateCustomer(Number(tutor.id), {
           name: raw.fullName ?? '',
           phone: this.toApiPhone(raw.phone ?? ''),
+          cpf: this.toApiCpf(raw.cpf ?? '') || undefined,
           street: raw.street ?? '',
           streetNumber: raw.streetNumber ?? '',
           neighborhood: raw.neighborhood ?? '',
@@ -261,13 +277,15 @@ export class TutorDetailModalComponent {
       this.tutorsState.updateRecord(tutor.id, {
         name: updated.name,
         phone: updated.phone || '--',
+        cpf: this.formatCpf(updated.cpf ?? ''),
         address: toAddressLabel(updated),
         birthDate: updated.birthDate
       });
 
       this.editingTutor.set(false);
+      this.toastService.success('Tutor atualizado com sucesso.');
     } catch {
-      this.editError.set('Nao foi possivel salvar as alteracoes do tutor.');
+      this.toastService.error('Nao foi possivel salvar as alteracoes do tutor.');
     } finally {
       this.isSavingEdit.set(false);
     }
@@ -279,24 +297,24 @@ export class TutorDetailModalComponent {
     const tutor = this.modalState.selectedTutor();
     if (!tutor) return;
 
-    if (
-      !confirm(
-        `Excluir ${tutor.name}? Todos os pets desse tutor tambem serao excluidos e essa acao nao pode ser desfeita por aqui.`
-      )
-    ) {
-      return;
-    }
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Excluir tutor',
+      message: `Excluir ${tutor.name}? Todos os pets desse tutor tambem serao excluidos e essa acao nao pode ser desfeita por aqui.`,
+      confirmLabel: 'Excluir',
+      danger: true
+    });
+    if (!confirmed) return;
 
     this.isSavingEdit.set(true);
-    this.editError.set('');
 
     try {
       await firstValueFrom(this.directoryApi.deleteCustomer(Number(tutor.id)));
       tutor.pets.forEach((pet) => this.petsState.removeRecord(pet.id));
       this.tutorsState.removeRecord(tutor.id);
       this.close();
+      this.toastService.success('Tutor excluido com sucesso.');
     } catch {
-      this.editError.set('Nao foi possivel excluir o tutor agora.');
+      this.toastService.error('Nao foi possivel excluir o tutor agora.');
     } finally {
       this.isSavingEdit.set(false);
     }
@@ -319,5 +337,25 @@ export class TutorDetailModalComponent {
 
   private toApiPhone(phone: string): string {
     return phone.replace(/\D/g, '');
+  }
+
+  private toApiCpf(cpf: string): string {
+    return cpf.replace(/\D/g, '');
+  }
+
+  // mascara automatica do CPF: 000.000.000-00, mesma ideia do telefone
+  onEditTutorCpfInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 11);
+    this.editTutorForm.controls['cpf'].setValue(this.formatCpf(digits));
+  }
+
+  private formatCpf(digits: string): string {
+    const onlyDigits = digits.replace(/\D/g, '').slice(0, 11);
+    if (!onlyDigits) return '';
+    if (onlyDigits.length <= 3) return onlyDigits;
+    if (onlyDigits.length <= 6) return `${onlyDigits.slice(0, 3)}.${onlyDigits.slice(3)}`;
+    if (onlyDigits.length <= 9) return `${onlyDigits.slice(0, 3)}.${onlyDigits.slice(3, 6)}.${onlyDigits.slice(6)}`;
+    return `${onlyDigits.slice(0, 3)}.${onlyDigits.slice(3, 6)}.${onlyDigits.slice(6, 9)}-${onlyDigits.slice(9, 11)}`;
   }
 }

@@ -51,4 +51,8 @@ export class MedicalRecordsApiService {
   update(id: number, payload: MedicalRecordRequestDTO): Observable<MedicalRecordResponseDTO> {
     return this.http.put<MedicalRecordResponseDTO>(`medical-records/${id}`, payload);
   }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`medical-records/${id}`);
+  }
 }

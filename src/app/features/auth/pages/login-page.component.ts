@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-login-page',
@@ -16,9 +17,9 @@ export class LoginPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
   isSubmitting = false;
-  authError = '';
 
   readonly form = this.fb.group({
     username: ['', Validators.required],
@@ -27,8 +28,6 @@ export class LoginPageComponent {
 
   async submit(): Promise<void> {
     if (this.isSubmitting) return;
-
-    this.authError = '';
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -48,7 +47,7 @@ export class LoginPageComponent {
 
       await this.router.navigate(['/app']);
     } catch {
-      this.authError = 'Falha no login. Verifique usuario e senha.';
+      this.toastService.error('Falha no login. Verifique usuario e senha.');
     } finally {
       this.isSubmitting = false;
     }

@@ -76,6 +76,19 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
               </span>
             </label>
             <label>
+              CPF <span class="req">*</span>
+              <input
+                type="text"
+                formControlName="cpf"
+                placeholder="000.000.000-00"
+                maxlength="14"
+                (input)="onCpfInput($event)"
+              />
+              <span class="field-error" *ngIf="tutorForm.controls['cpf'].invalid && tutorForm.controls['cpf'].touched">
+                Informe o CPF no formato 000.000.000-00.
+              </span>
+            </label>
+            <label>
               Data de nascimento <span class="req">*</span>
               <input type="date" formControlName="birthDate" />
               <span class="field-error" *ngIf="tutorForm.controls['birthDate'].invalid && tutorForm.controls['birthDate'].touched">
@@ -240,8 +253,6 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
             </div>
           </section>
 
-          <p class="error-message" *ngIf="registrationError">{{ registrationError }}</p>
-
           <footer class="wizard-actions">
             <p class="foot-note" *ngIf="registrationStep < 3"><span class="req">*</span> Campos obrigatorios</p>
             <button type="button" class="ghost-btn" (click)="close.emit()">Cancelar</button>
@@ -266,7 +277,6 @@ export class RegistrationViewComponent {
   @Input() petForm!: FormGroup;
   @Input() tutorRecords: Array<{ id: string; name: string; phone: string; initials: string; pets: unknown[] }> = [];
   @Input() selectedTutorForRegistration: { name: string } | null = null;
-  @Input() registrationError = '';
   @Input() isSubmittingRegistration = false;
 
   @Output() close = new EventEmitter<void>();
@@ -316,5 +326,20 @@ export class RegistrationViewComponent {
     if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
     if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  }
+
+  // mascara automatica do CPF: 000.000.000-00, mesma ideia do telefone acima
+  onCpfInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 11);
+    this.tutorForm.controls['cpf'].setValue(this.formatCpf(digits));
+  }
+
+  private formatCpf(digits: string): string {
+    if (!digits) return '';
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
   }
 }

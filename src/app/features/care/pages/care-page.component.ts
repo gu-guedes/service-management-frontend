@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { CareViewComponent } from '../components/care-view.component';
-import { VisitDetailViewComponent } from '../components/visit-detail-view.component';
+import { VisitDetailViewComponent, VisitEditPayload } from '../components/visit-detail-view.component';
 import { CareStateService } from '../../../core/services/care-state.service';
 import { ModalStateService } from '../../../core/services/modal-state.service';
 import { PetsStateService } from '../../../core/services/pets-state.service';
@@ -13,6 +13,7 @@ import { ExamRequestsApiService, ExamRequestResponseDTO } from '../../../core/se
 import { ExamRequestsStateService } from '../../../core/services/exam-requests-state.service';
 import { MedicalRecordImagesApiService } from '../../../core/services/medical-record-images-api.service';
 import { MedicalRecordImagesStateService } from '../../../core/services/medical-record-images-state.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
 
 @Component({
@@ -26,7 +27,6 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [selectedTutorRecord]="modalState.selectedTutor()"
       [selectedPetTimeline]="modalState.selectedPetTimeline()"
       [selectedPetEmoji]="modalState.selectedPetEmoji()"
-      [careCompletionMessage]="careState.completionMessage()"
       [weightKg]="careState.weightKg()"
       [weightSuggestionLabel]="careState.weightSuggestionLabel()"
       [complaint]="careState.complaint()"
@@ -62,11 +62,15 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [uploadingExamIds]="uploadingExamIds()"
       [images]="medicalRecordImagesState.findByMedicalRecordId(record.id)"
       [isUploadingImages]="isUploadingImages()"
+      [isSavingEdit]="isSavingVisitEdit()"
+      [isDeletingRecord]="isDeletingVisit()"
       (close)="modalState.closeVisitDetail()"
       (markFollowUpDone)="markFollowUpDone($event)"
       (uploadExamResult)="uploadExamResult($event.examId, $event.file)"
       (downloadExamResult)="downloadExamResult($event)"
       (uploadImage)="uploadImageToVisit(record.id, $event)"
+      (saveEdit)="saveEditedVisit($event)"
+      (deleteRecord)="deleteVisit($event)"
     />
   `
 })
@@ -80,6 +84,7 @@ export class CarePageComponent {
   private readonly medicalRecordsState = inject(MedicalRecordsStateService);
   private readonly examRequestsApi = inject(ExamRequestsApiService);
   private readonly medicalRecordImagesApi = inject(MedicalRecordImagesApiService);
+  private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
 
   readonly isCompletingVisit = signal(false);
@@ -87,6 +92,9 @@ export class CarePageComponent {
   readonly uploadingExamIds = signal<Set<number>>(new Set());
   readonly isUploadingImages = signal(false);
   readonly submitAttempted = signal(false);
+
+  readonly isSavingVisitEdit = signal(false);
+  readonly isDeletingVisit = signal(false);
 
   close(): void {
     this.careState.close();
@@ -103,7 +111,7 @@ export class CarePageComponent {
     const pet = this.modalState.selectedPet();
 
     if (!pet?.id) {
-      this.careState.setCompletionMessage('Nao foi possivel identificar o pet para salvar o atendimento.');
+      this.toastService.error('Nao foi possivel identificar o pet para salvar o atendimento.');
       return;
     }
 
@@ -112,7 +120,7 @@ export class CarePageComponent {
     const treatment = this.careState.treatment().trim();
 
     if (!complaint || !anamnesis || !treatment) {
-      this.careState.setCompletionMessage('Preencha a queixa, a anamnese e o tratamento antes de salvar.');
+      this.toastService.error('Preencha a queixa, a anamnese e o tratamento antes de salvar.');
       return;
     }
 
@@ -131,6 +139,11 @@ export class CarePageComponent {
       );
 
       this.careState.complete();
+      // reseta a flag de "ja tentei salvar" — sem isso, o formulario limpo
+      // (agora vazio) ficava mostrando "Informe a queixa/anamnese/tratamento"
+      // em vermelho de graca, mesmo sem o usuario ter tentado salvar de novo
+      this.submitAttempted.set(false);
+      this.toastService.success('Atendimento salvo com sucesso.');
       this.modalState.reloadSelectedPetVisits();
       this.medicalRecordsState.addRecord(record);
       this.petsState.updateLastVisit(pet.id, toBrDateFromIso(record.recordDate));
@@ -153,7 +166,7 @@ export class CarePageComponent {
         createdImages.forEach((img) => this.medicalRecordImagesState.addRecord(img));
       }
     } catch {
-      this.careState.setCompletionMessage('Nao foi possivel salvar o atendimento agora. Tente novamente.');
+      this.toastService.error('Nao foi possivel salvar o atendimento agora. Tente novamente.');
     } finally {
       this.isCompletingVisit.set(false);
     }
@@ -226,5 +239,57 @@ export class CarePageComponent {
     link.download = exam.resultFileName || 'resultado.pdf';
     link.click();
     URL.revokeObjectURL(url);
+  }
+
+  async saveEditedVisit(payload: VisitEditPayload): Promise<void> {
+    if (this.isSavingVisitEdit()) return;
+
+    const current = this.modalState.selectedVisitRecord();
+    if (!current) return;
+
+    this.isSavingVisitEdit.set(true);
+
+    try {
+      const updated = await firstValueFrom(
+        this.medicalRecordsApi.update(payload.id, {
+          patientId: current.patientId,
+          complaint: payload.complaint,
+          anamnesis: payload.anamnesis,
+          treatment: payload.treatment,
+          weightKg: payload.weightKg
+        })
+      );
+
+      this.medicalRecordsState.updateRecord(payload.id, updated);
+      this.toastService.success('Atendimento atualizado com sucesso.');
+      this.modalState.reloadSelectedPetVisits();
+
+      const pet = this.modalState.selectedPet();
+      if (pet?.id) {
+        this.petsState.updateLastVisit(pet.id, toBrDateFromIso(updated.recordDate));
+      }
+    } catch {
+      this.toastService.error('Nao foi possivel salvar as alteracoes. Tente novamente.');
+    } finally {
+      this.isSavingVisitEdit.set(false);
+    }
+  }
+
+  async deleteVisit(id: number): Promise<void> {
+    if (this.isDeletingVisit()) return;
+
+    this.isDeletingVisit.set(true);
+
+    try {
+      await firstValueFrom(this.medicalRecordsApi.delete(id));
+      this.medicalRecordsState.removeRecord(id);
+      this.toastService.success('Atendimento excluido com sucesso.');
+      this.modalState.closeVisitDetail();
+      this.modalState.reloadSelectedPetVisits();
+    } catch {
+      this.toastService.error('Nao foi possivel excluir o atendimento. Tente novamente.');
+    } finally {
+      this.isDeletingVisit.set(false);
+    }
   }
 }

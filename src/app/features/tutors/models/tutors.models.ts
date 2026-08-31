@@ -10,6 +10,7 @@ export interface TutorRecord {
   id: string;
   name: string;
   phone: string;
+  cpf: string;
   address: string;
   initials: string;
   lastVisit: string;
