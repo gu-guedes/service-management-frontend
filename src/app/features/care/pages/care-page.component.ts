@@ -64,7 +64,7 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [isUploadingImages]="isUploadingImages()"
       [isSavingEdit]="isSavingVisitEdit()"
       [isDeletingRecord]="isDeletingVisit()"
-      (close)="modalState.closeVisitDetail()"
+      (close)="closeVisitDetail()"
       (markFollowUpDone)="markFollowUpDone($event)"
       (uploadExamResult)="uploadExamResult($event.examId, $event.file)"
       (downloadExamResult)="downloadExamResult($event)"
@@ -100,6 +100,23 @@ export class CarePageComponent {
     this.careState.close();
     this.modalState.close();
     this.router.navigate(['/app/pets']);
+  }
+
+  // fecha o detalhe do atendimento — pra onde volta depende de como chegou aqui
+  // (ver ModalStateService.openVisitDetail): da ficha do pet, dos Avisos, ou
+  // clicado dentro da propria tela de atendimento (nesse caso so revela o
+  // "Novo atendimento" que ja estava por baixo, sem navegar pra lugar nenhum)
+  closeVisitDetail(): void {
+    const origin = this.modalState.visitDetailOrigin();
+    const petName = this.modalState.selectedPet()?.name;
+    this.modalState.closeVisitDetail();
+
+    if (origin === 'avisos') {
+      this.router.navigate(['/app/dashboard']);
+    } else if (origin === 'pet-ficha' && petName) {
+      this.modalState.openPetModal(petName);
+      this.router.navigate(['/app/pets']);
+    }
   }
 
   async completeCareVisit(): Promise<void> {

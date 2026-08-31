@@ -265,7 +265,7 @@ export class PetDetailModalComponent {
 
     const latestWeight = this.modalState.selectedPetLatestWeight();
     this.careState.startForPet(pet, latestWeight);
-    this.modalState.openVisitDetail(visitId);
+    this.modalState.openVisitDetail(visitId, 'pet-ficha');
     this.router.navigate(['/app/care']);
   }
 
