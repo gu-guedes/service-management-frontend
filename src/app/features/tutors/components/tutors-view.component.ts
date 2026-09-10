@@ -15,6 +15,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           </div>
         </header>
 
+        <div class="filters-bar">
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Buscar por nome, telefone ou CPF..."
+            [value]="searchTerm"
+            (input)="searchTermChange.emit($any($event.target).value)"
+          />
+        </div>
+
         <div class="table-scroll">
         <table>
           <thead>
@@ -91,9 +101,11 @@ export class TutorsViewComponent {
 
   @Input() expandedTutorId: string | null = null;
   @Input() birthdayTodayIds: Set<string> = new Set();
+  @Input() searchTerm = '';
 
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
   @Output() addPet = new EventEmitter<void>();
+  @Output() searchTermChange = new EventEmitter<string>();
 }

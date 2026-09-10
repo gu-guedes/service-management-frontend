@@ -10,20 +10,31 @@ export class PetsStateService {
   // signal() = equivalente ao useState do React
   private readonly _records = signal<PetRecord[]>([]);
   private readonly _activeFilter = signal<PetFilter>('all');
+  private readonly _searchTerm = signal('');
 
   // asReadonly() expõe o signal sem permitir .set() de fora
   readonly records = this._records.asReadonly();
   readonly activeFilter = this._activeFilter.asReadonly();
+  readonly searchTerm = this._searchTerm.asReadonly();
 
   // computed() = equivalente ao useMemo do React
-  // recalcula automaticamente quando _records ou _activeFilter mudam
+  // recalcula automaticamente quando _records, _activeFilter ou _searchTerm mudam
   readonly filtered = computed(() => {
     const filter = this._activeFilter();
-    const records = this._records();
+    const term = this._searchTerm().trim().toLowerCase();
+    let records = this._records();
 
-    if (filter === 'all') return records;
+    if (filter !== 'all') {
+      records = records.filter((pet) => pet.species === filter);
+    }
 
-    return records.filter((pet) => pet.species === filter);
+    if (term) {
+      records = records.filter(
+        (pet) => pet.name.toLowerCase().includes(term) || pet.tutor.toLowerCase().includes(term)
+      );
+    }
+
+    return records;
   });
 
   // dados estáticos de UI (não precisam de signal — nunca mudam)
@@ -36,6 +47,10 @@ export class PetsStateService {
 
   setFilter(filter: PetFilter): void {
     this._activeFilter.set(filter);
+  }
+
+  setSearchTerm(term: string): void {
+    this._searchTerm.set(term);
   }
 
   // update() = forma de alterar signal usando o valor anterior (como setState funcional)

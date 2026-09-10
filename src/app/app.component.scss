@@ -409,6 +409,23 @@
 	color: #fff;
 }
 
+.search-input {
+	flex: 1 1 200px;
+	min-width: 180px;
+	margin-left: auto;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	padding: 0.3rem 0.75rem;
+	font-size: 0.76rem;
+	color: inherit;
+	background: #fff;
+}
+
+.search-input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
 // grade de cards da pagina de Avisos — lado a lado em vez de empilhados,
 // cada card so tao alto quanto o proprio conteudo (align-items: start)
 .avisos-grid {

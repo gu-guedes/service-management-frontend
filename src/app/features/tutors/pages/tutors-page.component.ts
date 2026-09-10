@@ -10,13 +10,15 @@ import { ModalStateService } from '../../../core/services/modal-state.service';
   imports: [TutorsViewComponent],
   template: `
     <app-tutors-view
-      [tutorRecords]="tutorsState.records()"
+      [tutorRecords]="tutorsState.filtered()"
       [expandedTutorId]="tutorsState.expandedId()"
       [birthdayTodayIds]="tutorsState.todayBirthdayIds()"
+      [searchTerm]="tutorsState.searchTerm()"
       (toggleTutor)="tutorsState.toggleExpanded($event)"
       (openTutor)="modalState.openTutorModal($event)"
       (openPet)="modalState.openPetModal($event)"
       (addPet)="goToAddPet()"
+      (searchTermChange)="tutorsState.setSearchTerm($event)"
     />
   `
 })

@@ -10,15 +10,36 @@ import { isBirthdayToday } from '../../shared/utils/pet-tutor-formatting';
 export class TutorsStateService {
   private readonly _records = signal<TutorRecord[]>([]);
   private readonly _expandedId = signal<string | null>(null);
+  private readonly _searchTerm = signal('');
 
   readonly records = this._records.asReadonly();
   readonly expandedId = this._expandedId.asReadonly();
+  readonly searchTerm = this._searchTerm.asReadonly();
 
   // tutores que fazem aniversario hoje — so filtra o que ja esta carregado, sem chamada de API nova
   readonly todayBirthdays = computed(() => this._records().filter((tutor) => isBirthdayToday(tutor.birthDate)));
 
   // ids dos tutores aniversariantes — usado pro emoji na linha da tabela
   readonly todayBirthdayIds = computed(() => new Set(this.todayBirthdays().map((tutor) => tutor.id)));
+
+  // busca por texto (nome, telefone ou cpf) — recalcula quando _records ou _searchTerm mudam
+  readonly filtered = computed(() => {
+    const term = this._searchTerm().trim().toLowerCase();
+    const records = this._records();
+
+    if (!term) return records;
+
+    return records.filter(
+      (tutor) =>
+        tutor.name.toLowerCase().includes(term) ||
+        tutor.phone.toLowerCase().includes(term) ||
+        tutor.cpf.toLowerCase().includes(term)
+    );
+  });
+
+  setSearchTerm(term: string): void {
+    this._searchTerm.set(term);
+  }
 
   // toggle: se clicou no mesmo tutor, fecha; se clicou em outro, abre aquele
   toggleExpanded(tutorId: string): void {

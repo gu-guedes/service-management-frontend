@@ -31,6 +31,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           >
             {{ filter.label }}
           </button>
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Buscar por pet ou tutor..."
+            [value]="searchTerm"
+            (input)="searchTermChange.emit($any($event.target).value)"
+          />
         </div>
 
         <div class="table-scroll">
@@ -98,11 +105,13 @@ export class PetsViewComponent {
 
   @Input() petFilters: Array<{ key: string; label: string }> = [];
   @Input() activePetFilter = 'all';
+  @Input() searchTerm = '';
   @Input() dueFollowUpPatientIds: Set<number> = new Set();
   @Input() expiringProductPatientIds: Set<number> = new Set();
   @Input() pendingExamPatientIds: Set<number> = new Set();
 
   @Output() petFilterChange = new EventEmitter<string>();
+  @Output() searchTermChange = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
   @Output() startCare = new EventEmitter<string>();
   @Output() addProduct = new EventEmitter<string>();
