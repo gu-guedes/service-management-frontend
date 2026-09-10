@@ -165,6 +165,7 @@ export interface VisitEditPayload {
                 <div class="due-followup-item" *ngFor="let exam of examRequests">
                   <div>
                     <p class="strong">{{ exam.examName }}</p>
+                    <p class="sub" *ngIf="exam.details">{{ exam.details }}</p>
                     <p class="sub">Solicitado em {{ formatExamDate(exam.requestedDate) }}</p>
                     <p class="sub" *ngIf="exam.resultFileName">Resultado anexado em {{ formatUploadedAt(exam.resultUploadedAt) }}</p>
                   </div>

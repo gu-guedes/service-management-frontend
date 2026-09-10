@@ -8,6 +8,8 @@ export interface ExamRequestResponseDTO {
   patientId: number;
   patientName: string;
   examName: string;
+  // itens especificos inclusos nesse exame (ex: "Exame completo" varia por animal) — opcional
+  details: string | null;
   requestedDate: string | null;
   resultFileName: string | null;
   resultUploadedAt: string | null;
@@ -17,6 +19,7 @@ export interface ExamRequestResponseDTO {
 export interface ExamRequestRequestDTO {
   medicalRecordId: number;
   examName: string;
+  details?: string;
   requestedDate?: string;
 }
 

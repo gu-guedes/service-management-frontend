@@ -33,7 +33,7 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       [anamnesis]="careState.anamnesis()"
       [treatment]="careState.treatment()"
       [followUpDate]="careState.followUpDate()"
-      [pendingExamNames]="careState.pendingExamNames()"
+      [pendingExams]="careState.pendingExams()"
       [pendingImages]="careState.pendingImages()"
       [isCompletingVisit]="isCompletingVisit()"
       [submitAttempted]="submitAttempted()"
@@ -43,8 +43,10 @@ import { toBrDateFromIso } from '../../../shared/utils/pet-tutor-formatting';
       (anamnesisChange)="careState.setAnamnesis($event)"
       (treatmentChange)="careState.setTreatment($event)"
       (followUpDateChange)="careState.setFollowUpDate($event)"
-      (addExamName)="careState.addPendingExamName($event)"
-      (removeExam)="careState.removePendingExamName($event)"
+      (addExam)="careState.addPendingExam()"
+      (examNameChange)="careState.updatePendingExamName($event.index, $event.value)"
+      (examDetailsChange)="careState.updatePendingExamDetails($event.index, $event.value)"
+      (removeExam)="careState.removePendingExam($event)"
       (addImage)="careState.addPendingImage($event)"
       (removeImage)="careState.removePendingImage($event)"
       (complete)="completeCareVisit()"
@@ -165,11 +167,18 @@ export class CarePageComponent {
       this.medicalRecordsState.addRecord(record);
       this.petsState.updateLastVisit(pet.id, toBrDateFromIso(record.recordDate));
 
-      const examNames = this.careState.pendingExamNames();
-      if (examNames.length) {
+      // ignora blocos deixados so com o nome em branco (ex: clicou em "+ Adicionar exame" e desistiu)
+      const pendingExams = this.careState.pendingExams().filter((exam) => exam.examName.trim());
+      if (pendingExams.length) {
         const created = await Promise.all(
-          examNames.map((examName) =>
-            firstValueFrom(this.examRequestsApi.create({ medicalRecordId: record.id, examName }))
+          pendingExams.map((exam) =>
+            firstValueFrom(
+              this.examRequestsApi.create({
+                medicalRecordId: record.id,
+                examName: exam.examName.trim(),
+                details: exam.details.trim() || undefined
+              })
+            )
           )
         );
         created.forEach((exam) => this.examRequestsState.addRecord(exam));

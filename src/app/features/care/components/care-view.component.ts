@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PendingImage } from '../../../core/services/care-state.service';
+import { PendingExam, PendingImage } from '../../../core/services/care-state.service';
 import { compressImage } from '../../../shared/utils/image-compression';
 
 @Component({
@@ -114,21 +114,24 @@ import { compressImage } from '../../../shared/utils/image-compression';
               </label>
               <label>
                 Exames solicitados
-                <div class="exam-input-row">
-                  <input
-                    type="text"
-                    #examInput
-                    placeholder="Ex: Hemograma completo"
-                    (keydown.enter)="$event.preventDefault(); addExam(examInput)"
-                  />
-                  <button type="button" class="ghost-btn" (click)="addExam(examInput)">+ Adicionar</button>
-                </div>
-                <div class="pets-inline compact" *ngIf="pendingExamNames.length">
-                  <span class="pet-chip" *ngFor="let name of pendingExamNames; let i = index">
-                    <span class="strong">{{ name }}</span>
+                <div class="exam-block" *ngFor="let exam of pendingExams; let i = index">
+                  <div class="exam-block-header">
+                    <input
+                      type="text"
+                      placeholder="Nome do exame — ex: Exame completo, Raio-X torax"
+                      [value]="exam.examName"
+                      (input)="examNameChange.emit({ index: i, value: $any($event.target).value })"
+                    />
                     <button type="button" class="chip-remove" (click)="removeExam.emit(i)">×</button>
-                  </span>
+                  </div>
+                  <textarea
+                    rows="2"
+                    placeholder="Itens especificos desse exame (opcional) — ex: hemograma, ureia, creatinina..."
+                    [value]="exam.details"
+                    (input)="examDetailsChange.emit({ index: i, value: $any($event.target).value })"
+                  ></textarea>
                 </div>
+                <button type="button" class="ghost-btn" (click)="addExam.emit()">+ Adicionar exame</button>
                 <span class="sub">Opcional — resultado (PDF) pode ser anexado depois, no detalhe do atendimento.</span>
               </label>
               <label>
@@ -172,7 +175,7 @@ export class CareViewComponent {
   @Input() anamnesis = '';
   @Input() treatment = '';
   @Input() followUpDate: string | null = null;
-  @Input() pendingExamNames: string[] = [];
+  @Input() pendingExams: PendingExam[] = [];
   @Input() pendingImages: PendingImage[] = [];
   @Input() isCompletingVisit = false;
   @Input() submitAttempted = false;
@@ -185,7 +188,9 @@ export class CareViewComponent {
   @Output() anamnesisChange = new EventEmitter<string>();
   @Output() treatmentChange = new EventEmitter<string>();
   @Output() followUpDateChange = new EventEmitter<string | null>();
-  @Output() addExamName = new EventEmitter<string>();
+  @Output() addExam = new EventEmitter<void>();
+  @Output() examNameChange = new EventEmitter<{ index: number; value: string }>();
+  @Output() examDetailsChange = new EventEmitter<{ index: number; value: string }>();
   @Output() removeExam = new EventEmitter<number>();
   @Output() addImage = new EventEmitter<File>();
   @Output() removeImage = new EventEmitter<number>();
@@ -210,13 +215,6 @@ export class CareViewComponent {
   onFollowUpDateInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
     this.followUpDateChange.emit(raw || null);
-  }
-
-  addExam(input: HTMLInputElement): void {
-    const name = input.value.trim();
-    if (!name) return;
-    this.addExamName.emit(name);
-    input.value = '';
   }
 
   async onImagesSelected(event: Event): Promise<void> {
