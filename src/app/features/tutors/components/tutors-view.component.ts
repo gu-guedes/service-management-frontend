@@ -1,17 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { PaginationComponent } from '../../../shared/components/pagination.component';
 
 @Component({
   selector: 'app-tutors-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationComponent],
   template: `
     <section class="tutors-view">
       <article class="card">
         <header class="card-header pets-header">
           <div>
             <h3>Tutores / Clientes</h3>
-            <p>{{ tutorRecords.length }} tutores cadastrados</p>
+            <p>{{ totalResults }} resultados exibidos</p>
           </div>
         </header>
 
@@ -85,6 +86,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           </tbody>
         </table>
         </div>
+
+        <app-pagination [page]="page" [totalPages]="totalPages" (pageChange)="pageChange.emit($event)" />
       </article>
     </section>
   `
@@ -102,10 +105,14 @@ export class TutorsViewComponent {
   @Input() expandedTutorId: string | null = null;
   @Input() birthdayTodayIds: Set<string> = new Set();
   @Input() searchTerm = '';
+  @Input() totalResults = 0;
+  @Input() page = 1;
+  @Input() totalPages = 1;
 
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
   @Output() openPet = new EventEmitter<string>();
   @Output() addPet = new EventEmitter<void>();
   @Output() searchTermChange = new EventEmitter<string>();
+  @Output() pageChange = new EventEmitter<number>();
 }

@@ -11,10 +11,16 @@ export class TutorsStateService {
   private readonly _records = signal<TutorRecord[]>([]);
   private readonly _expandedId = signal<string | null>(null);
   private readonly _searchTerm = signal('');
+  private readonly _page = signal(1);
+
+  // quantidade de linhas por pagina — paginacao e so client-side por enquanto
+  // (ver plano: backend ainda nao tem Pageable/search nos endpoints de customers/patients)
+  readonly pageSize = 10;
 
   readonly records = this._records.asReadonly();
   readonly expandedId = this._expandedId.asReadonly();
   readonly searchTerm = this._searchTerm.asReadonly();
+  readonly page = this._page.asReadonly();
 
   // tutores que fazem aniversario hoje — so filtra o que ja esta carregado, sem chamada de API nova
   readonly todayBirthdays = computed(() => this._records().filter((tutor) => isBirthdayToday(tutor.birthDate)));
@@ -37,8 +43,21 @@ export class TutorsStateService {
     );
   });
 
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
+
+  // fatia de filtered() referente a pagina atual — o que a tabela de fato renderiza
+  readonly pagedRecords = computed(() => {
+    const start = (this._page() - 1) * this.pageSize;
+    return this.filtered().slice(start, start + this.pageSize);
+  });
+
   setSearchTerm(term: string): void {
     this._searchTerm.set(term);
+    this._page.set(1);
+  }
+
+  setPage(page: number): void {
+    this._page.set(page);
   }
 
   // toggle: se clicou no mesmo tutor, fecha; se clicou em outro, abre aquele

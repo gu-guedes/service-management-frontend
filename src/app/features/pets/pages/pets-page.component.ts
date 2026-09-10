@@ -21,15 +21,19 @@ import { ExamRequestsStateService } from '../../../core/services/exam-requests-s
   imports: [PetsViewComponent],
   template: `
     <app-pets-view
-      [filteredPetRecords]="petsState.filtered()"
+      [filteredPetRecords]="petsState.pagedRecords()"
       [petFilters]="petsState.filters"
       [activePetFilter]="petsState.activeFilter()"
       [searchTerm]="petsState.searchTerm()"
+      [totalResults]="petsState.filtered().length"
+      [page]="petsState.page()"
+      [totalPages]="petsState.totalPages()"
       [dueFollowUpPatientIds]="medicalRecordsState.dueFollowUpPatientIds()"
       [expiringProductPatientIds]="productApplicationsState.expiringProductPatientIds()"
       [pendingExamPatientIds]="examRequestsState.pendingExamPatientIds()"
       (petFilterChange)="petsState.setFilter($any($event))"
       (searchTermChange)="petsState.setSearchTerm($event)"
+      (pageChange)="petsState.setPage($event)"
       (openPet)="modalState.openPetModal($event)"
       (startCare)="startCare($event)"
       (addProduct)="productApplicationModalState.open($event)"
