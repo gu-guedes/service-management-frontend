@@ -114,7 +114,7 @@ import { compressImage } from '../../../shared/utils/image-compression';
               </label>
               <label>
                 Exames solicitados
-                <div class="exam-block" *ngFor="let exam of pendingExams; let i = index">
+                <div class="exam-block" *ngFor="let exam of pendingExams; let i = index; trackBy: trackByIndex">
                   <div class="exam-block-header">
                     <input
                       type="text"
@@ -194,6 +194,13 @@ export class CareViewComponent {
   @Output() removeExam = new EventEmitter<number>();
   @Output() addImage = new EventEmitter<File>();
   @Output() removeImage = new EventEmitter<number>();
+
+  // sem isso, o Angular usa identidade do objeto pra rastrear o *ngFor — como cada letra
+  // digitada recria o array de pendingExams (novos objetos), o <input>/<textarea> do bloco
+  // era destruido e recriado a cada tecla, perdendo o foco (parecia "travar" a cada letra)
+  trackByIndex(index: number): number {
+    return index;
+  }
 
   onWeightInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
