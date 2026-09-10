@@ -609,7 +609,7 @@ tbody tr:hover {
 	padding: 0;
 }
 
-// campo de texto + botao "+ Adicionar" pra montar a lista de exames antes de salvar o atendimento
+// campo de arquivo + botao "Anexar resultado" no detalhe do atendimento (ver visit-detail-view)
 .exam-input-row {
 	display: flex;
 	gap: 0.5rem;
@@ -617,6 +617,31 @@ tbody tr:hover {
 
 .exam-input-row input {
 	flex: 1;
+}
+
+// um bloco por exame solicitado (nome + itens especificos) no formulario de Novo Atendimento
+.exam-block {
+	border: 1px solid var(--border);
+	border-radius: 0.6rem;
+	padding: 0.6rem;
+	margin-bottom: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.exam-block-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.exam-block-header input {
+	flex: 1;
+}
+
+.exam-block textarea {
+	resize: vertical;
 }
 
 .chip-remove {

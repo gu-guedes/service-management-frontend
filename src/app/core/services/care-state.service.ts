@@ -8,6 +8,14 @@ export interface PendingImage {
   previewUrl: string;
 }
 
+// um exame sendo solicitado nesse atendimento em andamento — examName e obrigatorio,
+// details e onde entram os itens especificos (ex: o que compoe um "Exame completo",
+// que varia por animal), opcional, preenchido na hora da solicitacao
+export interface PendingExam {
+  examName: string;
+  details: string;
+}
+
 // -------------------------------------------------------------------
 // Serviço de estado do atendimento (prontuário)
 // Responsabilidade: os campos hoje persistidos na API real
@@ -27,7 +35,7 @@ export class CareStateService {
   readonly followUpDate = signal<string | null>(null);
   // exames sendo adicionados nesse atendimento em andamento — so viram ExamRequest de
   // verdade depois de salvar (precisam do id do atendimento, que ainda nao existe aqui)
-  readonly pendingExamNames = signal<string[]>([]);
+  readonly pendingExams = signal<PendingExam[]>([]);
   // fotos ja comprimidas, aguardando o atendimento ser salvo pra saber o medicalRecordId
   readonly pendingImages = signal<PendingImage[]>([]);
 
@@ -35,7 +43,7 @@ export class CareStateService {
     this.isOpen.set(true);
     this.resetFields();
     this.followUpDate.set(null);
-    this.pendingExamNames.set([]);
+    this.pendingExams.set([]);
     this.clearPendingImages();
   }
 
@@ -43,7 +51,7 @@ export class CareStateService {
     this.isOpen.set(false);
     this.resetFields();
     this.followUpDate.set(null);
-    this.pendingExamNames.set([]);
+    this.pendingExams.set([]);
     this.clearPendingImages();
   }
 
@@ -82,14 +90,20 @@ export class CareStateService {
     this.followUpDate.set(value || null);
   }
 
-  addPendingExamName(name: string): void {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    this.pendingExamNames.update((names) => [...names, trimmed]);
+  addPendingExam(): void {
+    this.pendingExams.update((exams) => [...exams, { examName: '', details: '' }]);
   }
 
-  removePendingExamName(index: number): void {
-    this.pendingExamNames.update((names) => names.filter((_, i) => i !== index));
+  updatePendingExamName(index: number, examName: string): void {
+    this.pendingExams.update((exams) => exams.map((exam, i) => (i === index ? { ...exam, examName } : exam)));
+  }
+
+  updatePendingExamDetails(index: number, details: string): void {
+    this.pendingExams.update((exams) => exams.map((exam, i) => (i === index ? { ...exam, details } : exam)));
+  }
+
+  removePendingExam(index: number): void {
+    this.pendingExams.update((exams) => exams.filter((_, i) => i !== index));
   }
 
   addPendingImage(file: File): void {
