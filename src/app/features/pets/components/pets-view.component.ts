@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { PaginationComponent } from '../../../shared/components/pagination.component';
 
 // -------------------------------------------------------------------
 // Lista de Pets. Os avisos (retorno/produto/exame pendente) tem card
@@ -9,14 +10,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 @Component({
   selector: 'app-pets-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationComponent],
   template: `
     <section class="pets-view">
       <article class="card">
         <header class="card-header pets-header">
           <div>
             <h3>Fichas de Pets</h3>
-            <p>{{ filteredPetRecords.length }} resultados exibidos</p>
+            <p>{{ totalResults }} resultados exibidos</p>
           </div>
         </header>
 
@@ -31,6 +32,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           >
             {{ filter.label }}
           </button>
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Buscar por pet ou tutor..."
+            [value]="searchTerm"
+            (input)="searchTermChange.emit($any($event.target).value)"
+          />
         </div>
 
         <div class="table-scroll">
@@ -81,6 +89,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
           </tbody>
         </table>
         </div>
+
+        <app-pagination [page]="page" [totalPages]="totalPages" (pageChange)="pageChange.emit($event)" />
       </article>
     </section>
   `
@@ -98,11 +108,17 @@ export class PetsViewComponent {
 
   @Input() petFilters: Array<{ key: string; label: string }> = [];
   @Input() activePetFilter = 'all';
+  @Input() searchTerm = '';
+  @Input() totalResults = 0;
+  @Input() page = 1;
+  @Input() totalPages = 1;
   @Input() dueFollowUpPatientIds: Set<number> = new Set();
   @Input() expiringProductPatientIds: Set<number> = new Set();
   @Input() pendingExamPatientIds: Set<number> = new Set();
 
   @Output() petFilterChange = new EventEmitter<string>();
+  @Output() searchTermChange = new EventEmitter<string>();
+  @Output() pageChange = new EventEmitter<number>();
   @Output() openPet = new EventEmitter<string>();
   @Output() startCare = new EventEmitter<string>();
   @Output() addProduct = new EventEmitter<string>();

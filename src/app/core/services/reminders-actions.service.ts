@@ -62,7 +62,7 @@ export class RemindersActionsService {
     await this.modalState.selectPet(pet.name);
     const latestWeight = this.modalState.selectedPetLatestWeight();
     this.careState.startForPet(pet, latestWeight);
-    this.modalState.openVisitDetail(exam.medicalRecordId);
+    this.modalState.openVisitDetail(exam.medicalRecordId, 'avisos');
     this.router.navigate(['/app/care']);
   }
 }

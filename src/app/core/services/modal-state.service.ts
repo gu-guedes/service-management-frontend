@@ -8,6 +8,10 @@ import { MedicalRecordsApiService, MedicalRecordResponseDTO } from './medical-re
 
 type ActiveModal = 'pet' | 'tutor' | null;
 
+// de onde o usuario abriu o detalhe de um atendimento — usado só pra saber
+// pra onde voltar ao fechar (ver CarePageComponent.closeVisitDetail)
+export type VisitDetailOrigin = 'pet-ficha' | 'avisos' | null;
+
 // -------------------------------------------------------------------
 // Serviço de estado dos modais
 // Responsabilidade: qual modal está aberto e qual registro está selecionado
@@ -27,8 +31,10 @@ export class ModalStateService {
   private readonly _selectedPetVisitRecords = signal<MedicalRecordResponseDTO[]>([]);
   // id do atendimento aberto na pagina de detalhe (ver openVisitDetail)
   private readonly _selectedVisitId = signal<number | null>(null);
+  private readonly _visitDetailOrigin = signal<VisitDetailOrigin>(null);
 
   readonly activeModal = this._activeModal.asReadonly();
+  readonly visitDetailOrigin = this._visitDetailOrigin.asReadonly();
 
   // computed() que dependem de dois signals diferentes:
   // recalcula automaticamente se _selectedPetName ou o array de pets mudar
@@ -95,6 +101,7 @@ export class ModalStateService {
     this._selectedTutorId.set(null);
     this._selectedPetVisitRecords.set([]);
     this._selectedVisitId.set(null);
+    this._visitDetailOrigin.set(null);
   }
 
   // fecha so o overlay do modal (ficha/perfil), mantendo o pet/tutor selecionado
@@ -111,14 +118,18 @@ export class ModalStateService {
 
   // abre a pagina inteira de detalhe de um atendimento do historico
   // fecha o modal (se houver) — a pagina de detalhe fica por cima de tudo,
-  // mas mantem _selectedPetName/_selectedPetVisitRecords pro pet/historico continuarem resolvendo
-  openVisitDetail(id: number): void {
+  // mas mantem _selectedPetName/_selectedPetVisitRecords pro pet/historico continuarem resolvendo.
+  // "origin" guarda de onde o usuario veio, pra "Voltar" saber pra onde voltar
+  // (ver CarePageComponent.closeVisitDetail) em vez de sempre cair no atendimento em branco
+  openVisitDetail(id: number, origin: VisitDetailOrigin = null): void {
     this._activeModal.set(null);
     this._selectedVisitId.set(id);
+    this._visitDetailOrigin.set(origin);
   }
 
   closeVisitDetail(): void {
     this._selectedVisitId.set(null);
+    this._visitDetailOrigin.set(null);
   }
 
   private async loadSelectedPetVisits(): Promise<void> {
