@@ -66,4 +66,11 @@ export class ProductApplicationsStateService {
   addRecord(record: ProductApplicationResponseDTO): void {
     this._records.update((records) => [record, ...records]);
   }
+
+  // usado apos excluir um pet (ou todos os pets de um tutor excluido) — some da lista de
+  // produtos vencendo na hora, sem esperar um reload (o backend ja filtra paciente
+  // excluido, mas o estado local continuaria com o dado velho ate recarregar a pagina)
+  removeByPatientId(patientId: number): void {
+    this._records.update((records) => records.filter((r) => r.patientId !== patientId));
+  }
 }

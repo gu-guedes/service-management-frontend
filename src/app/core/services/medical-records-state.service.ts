@@ -50,4 +50,11 @@ export class MedicalRecordsStateService {
   removeRecord(id: number): void {
     this._records.update((records) => records.filter((r) => r.id !== id));
   }
+
+  // usado apos excluir um pet (ou todos os pets de um tutor excluido) — some da lista de
+  // retornos pendentes na hora, sem esperar um reload (o backend ja filtra paciente
+  // excluido, mas o estado local continuaria com o dado velho ate recarregar a pagina)
+  removeByPatientId(patientId: number): void {
+    this._records.update((records) => records.filter((r) => r.patientId !== patientId));
+  }
 }
