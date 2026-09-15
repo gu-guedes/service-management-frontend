@@ -93,7 +93,8 @@ export class AppComponent implements OnInit {
   readonly navItems: NavItem[] = [
     { label: 'Avisos', icon: '🔔', route: '/app/dashboard' },
     { label: 'Fichas de Pets', icon: '🐾', route: '/app/pets' },
-    { label: 'Tutores', icon: '👥', route: '/app/tutors' }
+    { label: 'Tutores', icon: '👥', route: '/app/tutors' },
+    { label: 'Historico', icon: '🗓️', route: '/app/history' }
   ];
 
   // sidebar vira um painel deslizante nesse breakpoint (ver app.component.scss) — fechado por padrao

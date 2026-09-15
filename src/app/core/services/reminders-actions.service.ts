@@ -7,6 +7,7 @@ import { PetsStateService } from './pets-state.service';
 import { MedicalRecordsApiService } from './medical-records-api.service';
 import { MedicalRecordsStateService } from './medical-records-state.service';
 import { ExamRequestResponseDTO } from './exam-requests-api.service';
+import { MedicalRecordResponseDTO } from './medical-records-api.service';
 
 // -------------------------------------------------------------------
 // Acoes de orquestracao dos avisos (retorno pendente, exame pendente)
@@ -63,6 +64,18 @@ export class RemindersActionsService {
     const latestWeight = this.modalState.selectedPetLatestWeight();
     this.careState.startForPet(pet, latestWeight);
     this.modalState.openVisitDetail(exam.medicalRecordId, 'avisos');
+    this.router.navigate(['/app/care']);
+  }
+
+  // abre a tela cheia de um atendimento a partir de uma linha do Historico
+  async openMedicalRecordVisit(record: MedicalRecordResponseDTO): Promise<void> {
+    const pet = this.petsState.findById(record.patientId);
+    if (!pet) return;
+
+    await this.modalState.selectPet(pet.name);
+    const latestWeight = this.modalState.selectedPetLatestWeight();
+    this.careState.startForPet(pet, latestWeight);
+    this.modalState.openVisitDetail(record.id, 'history');
     this.router.navigate(['/app/care']);
   }
 }
