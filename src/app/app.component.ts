@@ -94,7 +94,8 @@ export class AppComponent implements OnInit {
     { label: 'Avisos', icon: '🔔', route: '/app/dashboard' },
     { label: 'Fichas de Pets', icon: '🐾', route: '/app/pets' },
     { label: 'Tutores', icon: '👥', route: '/app/tutors' },
-    { label: 'Historico', icon: '🗓️', route: '/app/history' }
+    { label: 'Historico', icon: '🗓️', route: '/app/history' },
+    { label: 'Produtos Aplicados', icon: '💊', route: '/app/products' }
   ];
 
   // sidebar vira um painel deslizante nesse breakpoint (ver app.component.scss) — fechado por padrao

@@ -17,8 +17,9 @@ export class ProductApplicationsStateService {
 
   // so a aplicacao mais recente (por ordem de criacao, nao pela data de vencimento —
   // um registro corrigido/atrasado pode ter expiresAt menor que uma venda anterior)
-  // de cada par (patientId, productName)
-  private readonly latestPerPatientAndProduct = computed(() => {
+  // de cada par (patientId, productName) — publico: tambem usado pela aba Produtos Aplicados
+  // (ver ProductsAppliedStateService), que mostra "o que esta aplicado em quem agora"
+  readonly latestPerPatientAndProduct = computed(() => {
     const latest = new Map<string, ProductApplicationResponseDTO>();
 
     for (const record of this._records()) {

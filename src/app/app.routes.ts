@@ -28,6 +28,13 @@ export const routes: Routes = [
 				loadComponent: () => import('./features/history/pages/history-page.component').then((m) => m.HistoryPageComponent)
 			},
 			{
+				path: 'products',
+				loadComponent: () =>
+					import('./features/products-applied/pages/products-applied-page.component').then(
+						(m) => m.ProductsAppliedPageComponent
+					)
+			},
+			{
 				path: 'registration',
 				loadComponent: () =>
 					import('./features/registration/pages/registration-page.component').then((m) => m.RegistrationPageComponent)
