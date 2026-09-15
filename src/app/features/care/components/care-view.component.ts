@@ -69,19 +69,6 @@ import { compressImage } from '../../../shared/utils/image-compression';
                 <span class="sub" *ngIf="weightSuggestionLabel">{{ weightSuggestionLabel }} — confirme ou ajuste.</span>
               </label>
               <label>
-                Anamnese <span class="req">*</span>
-                <textarea
-                  rows="4"
-                  placeholder="Historico clinico relatado pelo tutor"
-                  [value]="anamnesis"
-                  [class.invalid]="submitAttempted && !anamnesis.trim()"
-                  (input)="onAnamnesisInput($event)"
-                ></textarea>
-                <span class="field-error" *ngIf="submitAttempted && !anamnesis.trim()">
-                  Informe a anamnese.
-                </span>
-              </label>
-              <label>
                 Queixa <span class="req">*</span>
                 <textarea
                   rows="4"
@@ -92,6 +79,19 @@ import { compressImage } from '../../../shared/utils/image-compression';
                 ></textarea>
                 <span class="field-error" *ngIf="submitAttempted && !complaint.trim()">
                   Informe a queixa.
+                </span>
+              </label>
+              <label>
+                Anamnese <span class="req">*</span>
+                <textarea
+                  rows="4"
+                  placeholder="Historico clinico relatado pelo tutor"
+                  [value]="anamnesis"
+                  [class.invalid]="submitAttempted && !anamnesis.trim()"
+                  (input)="onAnamnesisInput($event)"
+                ></textarea>
+                <span class="field-error" *ngIf="submitAttempted && !anamnesis.trim()">
+                  Informe a anamnese.
                 </span>
               </label>
               <label>
