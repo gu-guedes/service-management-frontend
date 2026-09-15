@@ -42,4 +42,11 @@ export class ExamRequestsStateService {
   updateRecord(id: number, patch: Partial<ExamRequestResponseDTO>): void {
     this._records.update((records) => records.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }
+
+  // usado apos excluir um pet (ou todos os pets de um tutor excluido) — some da lista de
+  // pendentes na hora, sem esperar um reload (o backend ja filtra paciente excluido, mas
+  // o estado local continuaria com o dado velho ate recarregar a pagina)
+  removeByPatientId(patientId: number): void {
+    this._records.update((records) => records.filter((r) => r.patientId !== patientId));
+  }
 }

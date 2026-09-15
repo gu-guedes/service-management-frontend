@@ -9,6 +9,8 @@ import { TutorsStateService } from '../../core/services/tutors-state.service';
 import { CareStateService } from '../../core/services/care-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
 import { ProductApplicationsStateService } from '../../core/services/product-applications-state.service';
+import { ExamRequestsStateService } from '../../core/services/exam-requests-state.service';
+import { MedicalRecordsStateService } from '../../core/services/medical-records-state.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import {
@@ -199,6 +201,8 @@ export class PetDetailModalComponent {
   private readonly tutorsState = inject(TutorsStateService);
   private readonly careState = inject(CareStateService);
   private readonly productApplicationsState = inject(ProductApplicationsStateService);
+  private readonly examRequestsState = inject(ExamRequestsStateService);
+  private readonly medicalRecordsState = inject(MedicalRecordsStateService);
   readonly modalState = inject(ModalStateService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly toastService = inject(ToastService);
@@ -365,6 +369,9 @@ export class PetDetailModalComponent {
       await firstValueFrom(this.directoryApi.deletePatient(pet.id));
       this.petsState.removeRecord(pet.id);
       this.tutorsState.removePet(pet.id);
+      this.examRequestsState.removeByPatientId(pet.id);
+      this.medicalRecordsState.removeByPatientId(pet.id);
+      this.productApplicationsState.removeByPatientId(pet.id);
       this.close();
       this.toastService.success('Pet excluido com sucesso.');
     } catch {

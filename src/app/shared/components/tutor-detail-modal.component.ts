@@ -6,6 +6,9 @@ import { ModalStateService } from '../../core/services/modal-state.service';
 import { TutorsStateService } from '../../core/services/tutors-state.service';
 import { PetsStateService } from '../../core/services/pets-state.service';
 import { DirectoryApiService } from '../../core/services/directory-api.service';
+import { ExamRequestsStateService } from '../../core/services/exam-requests-state.service';
+import { MedicalRecordsStateService } from '../../core/services/medical-records-state.service';
+import { ProductApplicationsStateService } from '../../core/services/product-applications-state.service';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatting';
@@ -186,6 +189,9 @@ export class TutorDetailModalComponent {
   private readonly directoryApi = inject(DirectoryApiService);
   private readonly tutorsState = inject(TutorsStateService);
   private readonly petsState = inject(PetsStateService);
+  private readonly examRequestsState = inject(ExamRequestsStateService);
+  private readonly medicalRecordsState = inject(MedicalRecordsStateService);
+  private readonly productApplicationsState = inject(ProductApplicationsStateService);
   readonly modalState = inject(ModalStateService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly toastService = inject(ToastService);
@@ -309,7 +315,12 @@ export class TutorDetailModalComponent {
 
     try {
       await firstValueFrom(this.directoryApi.deleteCustomer(Number(tutor.id)));
-      tutor.pets.forEach((pet) => this.petsState.removeRecord(pet.id));
+      tutor.pets.forEach((pet) => {
+        this.petsState.removeRecord(pet.id);
+        this.examRequestsState.removeByPatientId(pet.id);
+        this.medicalRecordsState.removeByPatientId(pet.id);
+        this.productApplicationsState.removeByPatientId(pet.id);
+      });
       this.tutorsState.removeRecord(tutor.id);
       this.close();
       this.toastService.success('Tutor excluido com sucesso.');
