@@ -115,6 +115,8 @@ export class CarePageComponent {
 
     if (origin === 'avisos') {
       this.router.navigate(['/app/dashboard']);
+    } else if (origin === 'history') {
+      this.router.navigate(['/app/history']);
     } else if (origin === 'pet-ficha' && petName) {
       this.modalState.openPetModal(petName);
       this.router.navigate(['/app/pets']);

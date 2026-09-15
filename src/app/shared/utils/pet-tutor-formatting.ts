@@ -74,6 +74,50 @@ export function toTomorrowIso(): string {
   return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 }
 
+function toIsoDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// domingo a sabado da semana corrente (calendario BR) — usado pro filtro rapido "Esta semana"
+export function toWeekRangeIso(): { from: string; to: string } {
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(now.getDate() - now.getDay());
+  const to = new Date(from);
+  to.setDate(from.getDate() + 6);
+
+  return { from: toIsoDate(from), to: toIsoDate(to) };
+}
+
+// dia 1 ao ultimo dia do mes corrente — usado pro filtro rapido "Este mes"
+export function toMonthRangeIso(): { from: string; to: string } {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), 1);
+  const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  return { from: toIsoDate(from), to: toIsoDate(to) };
+}
+
+// ontem, no formato yyyy-MM-dd
+export function toYesterdayIso(): string {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return toIsoDate(yesterday);
+}
+
+// horario (HH:mm) a partir de um timestamp ISO completo — ex: hora em que um atendimento foi salvo
+export function toTimeFromIso(iso: string | null | undefined): string {
+  if (!iso) return '--:--';
+
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '--:--';
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${hours}:${minutes}`;
+}
+
 // rotulo de urgencia de uma data ja filtrada como "devida" (hoje, atrasada ou amanha) —
 // usado tanto pelo retorno de atendimento quanto pela validade de produtos
 export function dateUrgencyLabel(dateOnlyIso: string | null | undefined): 'Atrasado' | 'Hoje' | 'Amanha' | '' {

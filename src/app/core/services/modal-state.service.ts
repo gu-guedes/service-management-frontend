@@ -10,7 +10,7 @@ type ActiveModal = 'pet' | 'tutor' | null;
 
 // de onde o usuario abriu o detalhe de um atendimento — usado só pra saber
 // pra onde voltar ao fechar (ver CarePageComponent.closeVisitDetail)
-export type VisitDetailOrigin = 'pet-ficha' | 'avisos' | null;
+export type VisitDetailOrigin = 'pet-ficha' | 'avisos' | 'history' | null;
 
 // -------------------------------------------------------------------
 // Serviço de estado dos modais

@@ -421,6 +421,17 @@
 	background: #fff;
 }
 
+// campo "De"/"Ate" do filtro de periodo (Historico) — mesmo visual do search-input,
+// pra ficar coeso dentro da mesma filters-bar
+.filters-bar input[type="date"] {
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	padding: 0.28rem 0.65rem;
+	font-size: 0.76rem;
+	color: inherit;
+	background: #fff;
+}
+
 .search-input:focus {
 	outline: none;
 	border-color: var(--accent);
