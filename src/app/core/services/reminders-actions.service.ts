@@ -58,9 +58,9 @@ export class RemindersActionsService {
   // abre o atendimento especifico de um exame pendente, direto do card
   async openExamVisit(exam: ExamRequestResponseDTO): Promise<void> {
     const pet = this.petsState.findById(exam.patientId);
-    if (!pet) return;
+    if (!pet || pet.id === null) return;
 
-    await this.modalState.selectPet(pet.name);
+    await this.modalState.selectPet(pet.id);
     const latestWeight = this.modalState.selectedPetLatestWeight();
     this.careState.startForPet(pet, latestWeight);
     this.modalState.openVisitDetail(exam.medicalRecordId, 'avisos');
@@ -70,9 +70,9 @@ export class RemindersActionsService {
   // abre a tela cheia de um atendimento a partir de uma linha do Historico
   async openMedicalRecordVisit(record: MedicalRecordResponseDTO): Promise<void> {
     const pet = this.petsState.findById(record.patientId);
-    if (!pet) return;
+    if (!pet || pet.id === null) return;
 
-    await this.modalState.selectPet(pet.name);
+    await this.modalState.selectPet(pet.id);
     const latestWeight = this.modalState.selectedPetLatestWeight();
     this.careState.startForPet(pet, latestWeight);
     this.modalState.openVisitDetail(record.id, 'history');

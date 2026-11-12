@@ -110,15 +110,15 @@ export class CarePageComponent {
   // "Novo atendimento" que ja estava por baixo, sem navegar pra lugar nenhum)
   closeVisitDetail(): void {
     const origin = this.modalState.visitDetailOrigin();
-    const petName = this.modalState.selectedPet()?.name;
+    const petId = this.modalState.selectedPet()?.id;
     this.modalState.closeVisitDetail();
 
     if (origin === 'avisos') {
       this.router.navigate(['/app/dashboard']);
     } else if (origin === 'history') {
       this.router.navigate(['/app/history']);
-    } else if (origin === 'pet-ficha' && petName) {
-      this.modalState.openPetModal(petName);
+    } else if (origin === 'pet-ficha' && petId !== null && petId !== undefined) {
+      this.modalState.openPetModal(petId);
       this.router.navigate(['/app/pets']);
     }
   }

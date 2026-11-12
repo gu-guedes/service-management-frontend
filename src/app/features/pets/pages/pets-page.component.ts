@@ -51,8 +51,8 @@ export class PetsPageComponent {
   private readonly router = inject(Router);
 
   // atalho da lista de pets: pula direto pro atendimento, sem passar pela ficha
-  async startCare(petName: string): Promise<void> {
-    await this.modalState.selectPet(petName);
+  async startCare(petId: number): Promise<void> {
+    await this.modalState.selectPet(petId);
     const pet = this.modalState.selectedPet();
     if (!pet) return;
 

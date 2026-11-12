@@ -56,7 +56,7 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of records" class="tutor-row" (click)="openPet.emit(product.patientName)">
+            <tr *ngFor="let product of records" class="tutor-row" (click)="openPet.emit(product.patientId)">
               <td class="strong">{{ product.productName }}</td>
               <td>{{ product.patientName }}</td>
               <td>{{ product.tutorName || 'Nao informado' }}</td>
@@ -67,7 +67,7 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
                 </span>
               </td>
               <td class="pet-actions">
-                <button type="button" class="ghost-btn" (click)="$event.stopPropagation(); openPet.emit(product.patientName)">
+                <button type="button" class="ghost-btn" (click)="$event.stopPropagation(); openPet.emit(product.patientId)">
                   Ver ficha
                 </button>
               </td>
@@ -96,7 +96,7 @@ export class ProductsAppliedViewComponent {
   @Output() statusFilterChange = new EventEmitter<ProductStatusFilter>();
   @Output() searchTermChange = new EventEmitter<string>();
   @Output() pageChange = new EventEmitter<number>();
-  @Output() openPet = new EventEmitter<string>();
+  @Output() openPet = new EventEmitter<number>();
 
   readonly toBrDateFromDateOnly = toBrDateFromDateOnly;
 }

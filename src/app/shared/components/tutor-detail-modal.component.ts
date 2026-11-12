@@ -170,7 +170,7 @@ import { toAddressLabel, toBrDateFromDateOnly } from '../utils/pet-tutor-formatt
                   type="button"
                   class="pet-chip"
                   *ngFor="let pet of tutor.pets"
-                  (click)="modalState.openPetModal(pet.name)"
+                  (click)="modalState.openPetModal(pet.id)"
                 >
                   <span>{{ pet.icon }}</span>
                   <span class="strong">{{ pet.name }}</span>
