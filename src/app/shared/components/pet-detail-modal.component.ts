@@ -335,11 +335,6 @@ export class PetDetailModalComponent {
         weightKg: updated.weightKg ?? null
       });
 
-      // o pet e resolvido pelo nome no modalState — se o nome mudou, reseleciona pelo novo nome
-      if (updated.name !== pet.name) {
-        await this.modalState.selectPet(updated.name);
-      }
-
       this.editingPet.set(false);
       this.toastService.success('Pet atualizado com sucesso.');
     } catch {

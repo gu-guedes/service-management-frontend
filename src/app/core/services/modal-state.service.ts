@@ -24,7 +24,7 @@ export class ModalStateService {
   private readonly medicalRecordsApi = inject(MedicalRecordsApiService);
 
   private readonly _activeModal = signal<ActiveModal>(null);
-  private readonly _selectedPetName = signal<string | null>(null);
+  private readonly _selectedPetId = signal<number | null>(null);
   private readonly _selectedTutorId = signal<string | null>(null);
   // registros crus, mais recente primeiro (ver MedicalRecordController#getByPatientId) —
   // usados tanto pro historico quanto pra sugerir o peso do proximo atendimento
@@ -37,10 +37,12 @@ export class ModalStateService {
   readonly visitDetailOrigin = this._visitDetailOrigin.asReadonly();
 
   // computed() que dependem de dois signals diferentes:
-  // recalcula automaticamente se _selectedPetName ou o array de pets mudar
+  // recalcula automaticamente se _selectedPetId ou o array de pets mudar.
+  // Por id, nao por nome — pets com nomes iguais (tutores diferentes) nao podem
+  // colidir na busca (findByName usava .find() e sempre resolvia o primeiro cadastrado)
   readonly selectedPet = computed((): PetRecord | null => {
-    const name = this._selectedPetName();
-    return name ? this.pets.findByName(name) : null;
+    const id = this._selectedPetId();
+    return id !== null ? this.pets.findById(id) : null;
   });
 
   readonly selectedTutor = computed((): TutorRecord | null => {
@@ -72,18 +74,18 @@ export class ModalStateService {
   // Métodos de controle
   // ----------------------------------------------------------------
 
-  openPetModal(petName: string, event?: Event): void {
+  openPetModal(petId: number, event?: Event): void {
     event?.stopPropagation();
-    void this.selectPet(petName);
+    void this.selectPet(petId);
     this._activeModal.set('pet');
   }
 
   // seleciona o pet sem abrir a ficha — usado pelo botao "+ Atendimento"
   // que vai direto pra tela de prontuario. Retorna uma Promise pra quem
   // precisa esperar o historico (e o peso sugerido) antes de continuar.
-  async selectPet(petName: string, event?: Event): Promise<void> {
+  async selectPet(petId: number, event?: Event): Promise<void> {
     event?.stopPropagation();
-    this._selectedPetName.set(petName);
+    this._selectedPetId.set(petId);
     this._selectedTutorId.set(null);
     await this.loadSelectedPetVisits();
   }
@@ -91,13 +93,13 @@ export class ModalStateService {
   openTutorModal(tutorId: string, event?: Event): void {
     event?.stopPropagation();
     this._selectedTutorId.set(tutorId);
-    this._selectedPetName.set(null);
+    this._selectedPetId.set(null);
     this._activeModal.set('tutor');
   }
 
   close(): void {
     this._activeModal.set(null);
-    this._selectedPetName.set(null);
+    this._selectedPetId.set(null);
     this._selectedTutorId.set(null);
     this._selectedPetVisitRecords.set([]);
     this._selectedVisitId.set(null);
@@ -118,7 +120,7 @@ export class ModalStateService {
 
   // abre a pagina inteira de detalhe de um atendimento do historico
   // fecha o modal (se houver) — a pagina de detalhe fica por cima de tudo,
-  // mas mantem _selectedPetName/_selectedPetVisitRecords pro pet/historico continuarem resolvendo.
+  // mas mantem _selectedPetId/_selectedPetVisitRecords pro pet/historico continuarem resolvendo.
   // "origin" guarda de onde o usuario veio, pra "Voltar" saber pra onde voltar
   // (ver CarePageComponent.closeVisitDetail) em vez de sempre cair no atendimento em branco
   openVisitDetail(id: number, origin: VisitDetailOrigin = null): void {

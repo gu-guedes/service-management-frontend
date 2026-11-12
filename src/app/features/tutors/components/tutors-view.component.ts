@@ -70,7 +70,7 @@ import { PaginationComponent } from '../../../shared/components/pagination.compo
                       type="button"
                       class="pet-chip"
                       *ngFor="let pet of tutor.pets"
-                      (click)="$event.stopPropagation(); openPet.emit(pet.name)"
+                      (click)="$event.stopPropagation(); openPet.emit(pet.id)"
                     >
                       <span>{{ pet.icon }}</span>
                       <span class="strong">{{ pet.name }}</span>
@@ -99,7 +99,7 @@ export class TutorsViewComponent {
     phone: string;
     initials: string;
     lastVisit: string;
-    pets: Array<{ name: string; details: string; icon: string }>;
+    pets: Array<{ id: number; name: string; details: string; icon: string }>;
   }> = [];
 
   @Input() expandedTutorId: string | null = null;
@@ -111,7 +111,7 @@ export class TutorsViewComponent {
 
   @Output() toggleTutor = new EventEmitter<string>();
   @Output() openTutor = new EventEmitter<string>();
-  @Output() openPet = new EventEmitter<string>();
+  @Output() openPet = new EventEmitter<number>();
   @Output() addPet = new EventEmitter<void>();
   @Output() searchTermChange = new EventEmitter<string>();
   @Output() pageChange = new EventEmitter<number>();
