@@ -79,6 +79,33 @@ import { toBrDateFromDateOnly } from '../../../shared/utils/pet-tutor-formatting
         </table>
         </div>
 
+        <!-- versao mobile da lista acima (mesmos dados/outputs) — ver .table-scroll/.mobile-cards no scss -->
+        <div class="mobile-cards">
+          <article class="record-card tutor-row" *ngFor="let product of records" (click)="openPet.emit(product.patientId)">
+            <p class="strong">{{ product.productName }}</p>
+            <dl class="record-card-fields">
+              <dt>Pet</dt>
+              <dd>{{ product.patientName }}</dd>
+              <dt>Tutor</dt>
+              <dd>{{ product.tutorName || 'Nao informado' }}</dd>
+              <dt>Aplicado em</dt>
+              <dd>{{ toBrDateFromDateOnly(product.appliedDate) }}</dd>
+              <dt>Status</dt>
+              <dd>
+                <span class="badge" [ngClass]="product.expired ? 'is-orange' : 'is-green'">
+                  {{ product.expired ? 'Vencido' : 'Valido ate ' + toBrDateFromDateOnly(product.expiresAt) }}
+                </span>
+              </dd>
+            </dl>
+            <div class="record-card-actions">
+              <button type="button" class="ghost-btn" (click)="$event.stopPropagation(); openPet.emit(product.patientId)">
+                Ver ficha
+              </button>
+            </div>
+          </article>
+          <p class="sub" *ngIf="!records.length">Nenhum produto aplicado encontrado.</p>
+        </div>
+
         <app-pagination [page]="page" [totalPages]="totalPages" (pageChange)="pageChange.emit($event)" />
       </article>
     </section>
