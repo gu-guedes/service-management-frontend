@@ -87,6 +87,50 @@ import { PaginationComponent } from '../../../shared/components/pagination.compo
         </table>
         </div>
 
+        <!-- versao mobile da lista acima (mesmos dados/outputs) — ver .table-scroll/.mobile-cards no scss -->
+        <div class="mobile-cards">
+          <article class="record-card tutor-row" *ngFor="let tutor of tutorRecords" (click)="toggleTutor.emit(tutor.id)">
+            <div class="pet-cell">
+              <span class="tutor-avatar">{{ tutor.initials }}</span>
+              <p class="strong">
+                {{ tutor.name }}
+                <span *ngIf="birthdayTodayIds.has(tutor.id)" title="Aniversario hoje">🎂</span>
+              </p>
+            </div>
+            <dl class="record-card-fields">
+              <dt>Contato</dt>
+              <dd>{{ tutor.phone }}</dd>
+              <dt>Pets</dt>
+              <dd><span class="badge is-gray">{{ tutor.pets.length }} {{ tutor.pets.length === 1 ? 'pet' : 'pets' }}</span></dd>
+              <dt>Ultima visita</dt>
+              <dd>{{ tutor.lastVisit }}</dd>
+            </dl>
+
+            <div class="pets-inline" *ngIf="expandedTutorId === tutor.id">
+              <button
+                type="button"
+                class="pet-chip"
+                *ngFor="let pet of tutor.pets"
+                (click)="$event.stopPropagation(); openPet.emit(pet.id)"
+              >
+                <span>{{ pet.icon }}</span>
+                <span class="strong">{{ pet.name }}</span>
+                <span class="sub">{{ pet.details }}</span>
+              </button>
+              <button type="button" class="pet-chip add" (click)="$event.stopPropagation(); addPet.emit()">
+                + Adicionar pet
+              </button>
+            </div>
+
+            <div class="record-card-actions">
+              <button type="button" class="ghost-btn" (click)="$event.stopPropagation(); openTutor.emit(tutor.id)">
+                Ver perfil
+              </button>
+            </div>
+          </article>
+          <p class="sub" *ngIf="!tutorRecords.length">Nenhum tutor encontrado.</p>
+        </div>
+
         <app-pagination [page]="page" [totalPages]="totalPages" (pageChange)="pageChange.emit($event)" />
       </article>
     </section>

@@ -55,6 +55,14 @@
 
     <router-outlet />
   </main>
+
+  <!-- navegacao principal no mobile — substitui a faixa de abas do topo (ver .tabs/.bottom-tabs no scss) -->
+  <nav class="bottom-tabs" aria-label="Secoes principais" *ngIf="!isFullScreenRoute()">
+    <a *ngFor="let item of navItems" [routerLink]="item.route" routerLinkActive="active">
+      <span class="bottom-tabs-icon">{{ item.icon }}</span>
+      <span>{{ item.label }}</span>
+    </a>
+  </nav>
 </div>
 
 <!-- Modais compartilhados — montados uma vez, abertos de qualquer pagina via ModalStateService -->

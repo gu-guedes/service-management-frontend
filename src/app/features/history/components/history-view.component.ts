@@ -77,6 +77,26 @@ import { toBrDateFromIso, toTimeFromIso } from '../../../shared/utils/pet-tutor-
         </table>
         </div>
 
+        <!-- versao mobile da lista acima (mesmos dados/outputs) — ver .table-scroll/.mobile-cards no scss -->
+        <div class="mobile-cards">
+          <article class="record-card tutor-row" *ngFor="let record of records" (click)="openRecord.emit(record)">
+            <p class="strong">{{ record.patientName }}</p>
+            <p class="sub">{{ record.complaint }}</p>
+            <dl class="record-card-fields">
+              <dt>Tutor</dt>
+              <dd>{{ record.tutorName || 'Nao informado' }}</dd>
+              <dt>Data</dt>
+              <dd>{{ toBrDateFromIso(record.recordDate) }} · {{ toTimeFromIso(record.recordDate) }}</dd>
+            </dl>
+            <div class="record-card-actions">
+              <button type="button" class="ghost-btn" (click)="$event.stopPropagation(); openRecord.emit(record)">
+                Abrir
+              </button>
+            </div>
+          </article>
+          <p class="sub" *ngIf="!records.length">Nenhum atendimento nesse periodo.</p>
+        </div>
+
         <app-pagination [page]="page" [totalPages]="totalPages" (pageChange)="pageChange.emit($event)" />
       </article>
     </section>

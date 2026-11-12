@@ -90,6 +90,42 @@ import { PaginationComponent } from '../../../shared/components/pagination.compo
         </table>
         </div>
 
+        <!-- versao mobile da lista acima (mesmos dados/outputs) — ver .table-scroll/.mobile-cards no scss -->
+        <div class="mobile-cards">
+          <article class="record-card" *ngFor="let pet of filteredPetRecords">
+            <div class="pet-cell">
+              <span class="pet-avatar">{{ getPetEmoji(pet.species) }}</span>
+              <div>
+                <p class="strong">
+                  {{ pet.name }}
+                  <span *ngIf="pet.id !== null && dueFollowUpPatientIds.has(pet.id)" title="Retorno pendente">🔔</span>
+                  <span *ngIf="pet.id !== null && expiringProductPatientIds.has(pet.id)" title="Produto vencendo">🏷️</span>
+                  <span *ngIf="pet.id !== null && pendingExamPatientIds.has(pet.id)" title="Exame pendente">🧪</span>
+                </p>
+                <p class="sub">{{ pet.summary }}</p>
+              </div>
+            </div>
+            <dl class="record-card-fields">
+              <dt>Tutor</dt>
+              <dd>{{ pet.tutor }}</dd>
+              <dt>Ultima visita</dt>
+              <dd>{{ pet.lastVisit }}</dd>
+            </dl>
+            <div class="record-card-actions">
+              <button type="button" class="ghost-btn" *ngIf="pet.id !== null" (click)="openPet.emit(pet.id)">
+                Ver ficha
+              </button>
+              <button type="button" class="primary-btn" *ngIf="pet.id !== null" (click)="startCare.emit(pet.id)">
+                + Atendimento
+              </button>
+              <button type="button" class="ghost-btn" (click)="addProduct.emit(pet.name)">
+                + Produto
+              </button>
+            </div>
+          </article>
+          <p class="sub" *ngIf="!filteredPetRecords.length">Nenhum pet encontrado.</p>
+        </div>
+
         <app-pagination [page]="page" [totalPages]="totalPages" (pageChange)="pageChange.emit($event)" />
       </article>
     </section>
