@@ -67,7 +67,7 @@ import { dateUrgencyLabel, toBrDateFromDateOnly } from '../../../shared/utils/pe
               <p class="sub">{{ product.productName }}</p>
               <p class="sub">Vence: {{ formatDateOnly(product.expiresAt) }}</p>
             </div>
-            <button type="button" class="ghost-btn" (click)="renewProduct.emit(product.patientName)">
+            <button type="button" class="ghost-btn" (click)="renewProduct.emit(product.patientId)">
               Renovar
             </button>
           </div>
@@ -128,7 +128,7 @@ export class DashboardViewComponent {
   @Input() todayBirthdays: Array<{ id: string; name: string; phone: string }> = [];
 
   @Output() markFollowUpDone = new EventEmitter<number>();
-  @Output() renewProduct = new EventEmitter<string>();
+  @Output() renewProduct = new EventEmitter<number>();
   @Output() openExamVisit = new EventEmitter<ExamRequestResponseDTO>();
   @Output() openTutorProfile = new EventEmitter<string>();
 
