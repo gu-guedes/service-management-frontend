@@ -81,7 +81,7 @@ import { PaginationComponent } from '../../../shared/components/pagination.compo
                 <button type="button" class="primary-btn" *ngIf="pet.id !== null" (click)="startCare.emit(pet.id)">
                   + Atendimento
                 </button>
-                <button type="button" class="ghost-btn" (click)="addProduct.emit(pet.name)">
+                <button type="button" class="ghost-btn" *ngIf="pet.id !== null" (click)="addProduct.emit(pet.id)">
                   + Produto
                 </button>
               </td>
@@ -118,7 +118,7 @@ import { PaginationComponent } from '../../../shared/components/pagination.compo
               <button type="button" class="primary-btn" *ngIf="pet.id !== null" (click)="startCare.emit(pet.id)">
                 + Atendimento
               </button>
-              <button type="button" class="ghost-btn" (click)="addProduct.emit(pet.name)">
+              <button type="button" class="ghost-btn" *ngIf="pet.id !== null" (click)="addProduct.emit(pet.id)">
                 + Produto
               </button>
             </div>
@@ -157,7 +157,7 @@ export class PetsViewComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() openPet = new EventEmitter<number>();
   @Output() startCare = new EventEmitter<number>();
-  @Output() addProduct = new EventEmitter<string>();
+  @Output() addProduct = new EventEmitter<number>();
 
   getPetEmoji(species: 'dog' | 'cat' | 'other'): string {
     if (species === 'dog') {

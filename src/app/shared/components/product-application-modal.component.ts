@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ProductApplicationModalStateService } from '../../core/services/product-application-modal-state.service';
@@ -25,7 +25,8 @@ const PRODUCT_PRESETS = ['Coleira Leishmaniose', 'Vermifugo', 'Vacina'];
         <header class="modal-header">
           <div>
             <h3>Registrar produto</h3>
-            <p>{{ modalState.petName() }}</p>
+            <!-- tutor junto do nome: com dois pets de mesmo nome, e o que deixa claro em qual esta lancando -->
+            <p>{{ pet()?.name }}<ng-container *ngIf="pet()?.tutor"> · {{ pet()?.tutor }}</ng-container></p>
           </div>
           <button type="button" class="modal-close" (click)="close()">X</button>
         </header>
@@ -88,6 +89,10 @@ export class ProductApplicationModalComponent {
   readonly modalState = inject(ProductApplicationModalStateService);
 
   readonly productPresets = PRODUCT_PRESETS;
+  readonly pet = computed(() => {
+    const id = this.modalState.petId();
+    return id !== null ? this.petsState.findById(id) : null;
+  });
   readonly isSaving = signal(false);
   readonly error = signal('');
 
@@ -127,8 +132,7 @@ export class ProductApplicationModalComponent {
       return;
     }
 
-    const petName = this.modalState.petName();
-    const pet = petName ? this.petsState.findByName(petName) : null;
+    const pet = this.pet();
 
     if (!pet?.id) {
       this.error.set('Nao foi possivel identificar o pet para salvar.');
